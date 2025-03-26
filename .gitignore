@@ -1,5 +1,9 @@
+__pycache__/
+env/
+
 papers/3 - */
 papers/4 - */
 papers/5 - */
 papers/6 - */
 instances/test_instances/
+instances/cities_large_instances/

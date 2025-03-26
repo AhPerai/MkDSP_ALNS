@@ -1,8 +1,6 @@
 from algorithms.utils.graph_reader import read_graph, validate_solution
-from algorithms.utils.graph_visualizer import Visualizer
 from typing import Dict, Set, List
 from networkx import Graph
-import networkx as nx
 
 
 def generate_solution(graph: Graph, K) -> Set[int]:

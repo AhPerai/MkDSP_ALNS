@@ -2,7 +2,6 @@ from algorithms.utils.graph_reader import read_graph, validate_solution
 from algorithms.utils.graph_visualizer import Visualizer
 from typing import Dict, Set, List
 from networkx import Graph
-import logging
 
 
 def _calc_factor(dom_value: int, degree: int, n_nodes: int) -> float:
