@@ -1,13 +1,15 @@
-import warnings
+from typing import Dict, List, Tuple
 
 
 class ALNS:
 
     def __init__(self):
-        self._destroy_operators = dict()
-        self._repair_operators = dict()
+        self._destroy_operators = {}
+        self._repair_operators = {}
 
-    def execute():
+    def execute(
+        self,
+    ):
         """
         blank comment
         """
@@ -27,13 +29,3 @@ class ALNS:
 
     def add_repair_operator(self, operator, name=None):
         self._add_operator(self._repair_operators, operator, name)
-
-    @staticmethod
-    def _add_operator(operator, operator_list, operator_name=None):
-        if operator_name is None:
-            name = operator.__name__
-
-        if name in operator_list:
-            warnings.warn("oi")
-
-        operator_list[name] = operator
