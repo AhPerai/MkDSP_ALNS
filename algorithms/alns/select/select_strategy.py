@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
 from numpy import Generator
+import numpy as np
 
 
 class SelectStrategy(ABC):
@@ -8,8 +9,8 @@ class SelectStrategy(ABC):
     def __init__(self, num_destroy_op: int, num_repair_op: int, rng: Generator):
         self._num_destroy_op = num_destroy_op
         self._num_repair_op = num_repair_op
-        self._destroy_op_weights = self._num_destroy_op * [1.0]
-        self._repair_op_weights = self._num_repair_op * [1.0]
+        self._destroy_op_weights = np.ones(num_destroy_op)
+        self._repair_op_weights = np.ones(num_repair_op)
         self._rng = rng
 
     @property
