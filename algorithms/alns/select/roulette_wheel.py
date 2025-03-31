@@ -20,9 +20,9 @@ class RouletteWheelSelect(SelectStrategy):
         self._reaction_factor = reaction_factor
 
         # Track current iteration
-        self._iteration = 0
+        self._iteration = 1
 
-        # Track scores and attempts per iteration
+        # Track scores and attempts per iteration/segment
         self._destroy_scores = np.zeros(num_destroy_op)
         self._repair_scores = np.zeros(num_repair_op)
         self._destroy_attempts = np.zeros(num_destroy_op)

@@ -1,6 +1,7 @@
 from accept_strategy import AcceptStrategy
 from networkx import Graph
 from numpy.random import Generator
+import numpy as np
 
 
 class SimulatedAnnealing(AcceptStrategy):
@@ -27,5 +28,9 @@ class SimulatedAnnealing(AcceptStrategy):
     def current_temperature(self):
         return self._temperature
 
-    def accept(self, best_S: Graph, curr_S: Graph, new_S: Graph) -> bool:
-        return False
+    def _accept(self, curr_S: Graph, new_S: Graph) -> bool:
+        p = np.exp(-(len(curr_S) - len(new_S)) / self._temperature)
+        return self._rng.uniform(0, 1) < p
+
+    def update_values(self) -> None:
+        self._temperature *= self._cooling_rate
