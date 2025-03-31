@@ -13,9 +13,9 @@ class RouletteWheelSelect(SelectStrategy):
         num_repair_op: int,
         rng: Generator,
         segment_lenght: int,
-        reaction_factor: int,
+        reaction_factor: float,
     ):
-        super.__init__(self, num_destroy_op, num_repair_op, rng)
+        super().__init__(num_destroy_op, num_repair_op, rng)
         self._segment_lenght = segment_lenght
         self._reaction_factor = reaction_factor
 
@@ -31,7 +31,7 @@ class RouletteWheelSelect(SelectStrategy):
     def _roulette_wheel_selection(self, operators_weigths: List[float]) -> int:
         # normalizes the weights
         operators_probabilies = operators_weigths / np.sum(operators_weigths)
-        return self._rng.choice(range(len(operators_weigths)), p=operators_probabilies)
+        return self._rng.choice(len(operators_weigths), p=operators_probabilies)
 
     def select(self) -> Tuple[int, int]:
         d_idx = self._roulette_wheel_selection(self._destroy_op_weights)
@@ -75,3 +75,4 @@ class RouletteWheelSelect(SelectStrategy):
         self._repair_attempts.fill(0)
         self._destroy_scores.fill(0)
         self._repair_scores.fill(0)
+        self._iteration = 0
