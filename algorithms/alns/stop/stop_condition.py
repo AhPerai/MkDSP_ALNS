@@ -1,4 +1,5 @@
 from enum import Enum
+import time
 
 
 class Interrupt(Enum):
@@ -12,6 +13,10 @@ class StopCondition:
     def __init__(self, method: Interrupt, limit: int):
         self._method = method
         self._limit = limit
+
+        self._starting_time = time.perf_counter()
+        self._curr_iteration = 0
+
         self._methods = {
             Interrupt.BY_TIMEOUT: self._max_time,
             Interrupt.BY_ITERATION_LIMIT: self._max_iteration,
@@ -23,11 +28,14 @@ class StopCondition:
     def stop(self) -> bool:
         return self._stop_function()
 
+    def update_iteration(self) -> None:
+        self._curr_iteration += 1
+
     def _max_time(self) -> bool:
-        pass
+        return time.perf_counter - self._starting_time >= self._limit
 
     def _max_iteration(self) -> bool:
-        pass
+        return self._curr_iteration >= self._limit
 
     def _max_time_no_improvement(self) -> bool:
         return False

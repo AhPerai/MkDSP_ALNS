@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 from numpy import Generator
 import numpy as np
+from alns.outcome import Outcome
 
 
 class SelectStrategy(ABC):
@@ -30,5 +31,5 @@ class SelectStrategy(ABC):
         return NotImplemented
 
     @abstractmethod
-    def update(self, destroy_idx: int, repair_idx: int) -> None:
+    def update(self, destroy_idx: int, repair_idx: int, outcome: Outcome) -> None:
         return NotImplemented
