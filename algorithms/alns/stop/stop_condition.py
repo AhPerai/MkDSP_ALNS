@@ -18,9 +18,10 @@ class StopCondition:
             Interrupt.BY_TIMEOUT_NO_IMPROVEMENT: self._max_time_no_improvement,
             Interrupt.BY_ITERATION_LIMIT_NO_IMPROVEMENT: self._max_iteration_no_improvement,
         }
+        self._stop_function = self._methods.get(self._method, lambda: False)
 
-    def get_condition(self):
-        return self._methods.get(self._method, lambda: False)
+    def stop(self) -> bool:
+        return self._stop_function()
 
     def _max_time(self) -> bool:
         pass
