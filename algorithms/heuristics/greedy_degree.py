@@ -1,19 +1,20 @@
 from algorithms.utils.graph_reader import read_graph, validate_solution
 from typing import Dict, Set, List
 from networkx import Graph
+from algorithms.utils.graph_visualizer import Visualizer
 
 
-def repair(graph: Graph, K) -> Set[int]:
+def repair(graph: Graph, K, previous_S: Set[int] = None) -> Set[int]:
     G = graph
 
     """
     non_dominated = G.nodes; its a Set containing only the nodes' id
-    G_info is a dict where key = node_id -> [node_degree, K_value]
+    G_info is a dict where: node_id -> [node_degree, K_value]
     S is the solution set
     """
     G_info: Dict[int, List[int]] = dict()
     non_dominated: Set[int] = set()
-    S: Set[int] = set()
+    S: Set[int] = set() if previous_S == None else previous_S
 
     for v in G.nodes():
         G_info[v] = [G.degree[v], K]  # type: ignore
@@ -55,10 +56,9 @@ def repair(graph: Graph, K) -> Set[int]:
 
 if __name__ == "__main__":
     K = 2
-    graph = read_graph("instances/cities_small_instances/belfast.txt")
-    # graph = read_graph("instances/test_instances/g2000-50-42.graph")
-    # print(f"edge number: {graph.number_of_edges()}")
-    S = repair(graph, K)
+    graph = read_graph("instances/test_instances/g10-50-1234.graph")
+    S = repair(graph, K, {5})
+    print(S)
 
     # count = 0
     # for v in graph.nodes():
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     # print(f"orphan nodes: {count}")
 
-    print(f"\nIs Solution Valid: {validate_solution(graph, S, K)}\nSize: {len(S)}")
-
     # vis = Visualizer(graph)
     # vis.show(S)
+
+    print(f"\nIs Solution Valid: {validate_solution(graph, S, K)}\nSize: {len(S)}")

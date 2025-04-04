@@ -1,5 +1,7 @@
 __pycache__/
 env/
+.env
+.vscode
 
 papers/3 - */
 papers/4 - */

@@ -8,18 +8,18 @@ seed = int(sys.argv[3])
 folder_path = f"instances\\test_instances"
 
 random.seed(seed)
-filename = f'g{num_vertices}-{int(probability * 100)}-{seed}.graph'
+filename = f"g{num_vertices}-{int(probability * 100)}-{seed}.graph"
 
-content = f'c FILE: {filename}\n'
-content += 'c\n'
-content += f'c DESCRIPTION: This is a random graph with {num_vertices} vertices.\n'
-content += f'c   Each of pair of vertices are made adjacent with probability p = {probability}.\n'
-content += f'c   The random seed used for its generation was {seed}.\n'
-content += 'c\n'
+content = f"c FILE: {filename}\n"
+content += "c\n"
+content += f"c DESCRIPTION: This is a random graph with {num_vertices} vertices.\n"
+content += f"c   Each of pair of vertices are made adjacent with probability p = {probability}.\n"
+content += f"c   The random seed used for its generation was {seed}.\n"
+content += "c\n"
 content += f'c {datetime.now().strftime("%d/%m/%Y")}\n'
-content += 'c\n'
+content += "c\n"
 
-edges = ''
+edges = ""
 num_edges = 0
 edges_create = {}
 
@@ -37,11 +37,11 @@ for v in vertices:
 for i in range(num_vertices):
     for j in range(i + 1, num_vertices):
         if edges_create[i] == j or random.random() <= probability:
-            edges += f'e {i} {j}\n'
+            edges += f"e {i} {j}\n"
             num_edges += 1
 
-content += f'p edge {num_vertices} {num_edges}\n'
+content += f"p edge {num_vertices} {num_edges}\n"
 content += edges[:-1]
 
-with open(f"{folder_path}\\{filename}", 'w') as f:
+with open(f"{folder_path}\\{filename}", "w") as f:
     f.write(content)
