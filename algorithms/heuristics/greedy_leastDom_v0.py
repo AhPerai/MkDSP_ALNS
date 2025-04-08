@@ -4,7 +4,7 @@ from typing import Dict, Set, List
 from networkx import Graph
 
 
-def generate_solution(graph: Graph, K):
+def repair(graph: Graph, K):
     G = graph
 
     """
@@ -24,7 +24,7 @@ def generate_solution(graph: Graph, K):
     while len(non_dominated) > 0:
         v = next(iter(non_dominated))
 
-        # select the vertex with maximum degree
+        # select the least dominated node
         for u in non_dominated:
             if G_info[v][0] < G_info[u][0]:
                 v = u
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     graph = read_graph("instances/cities_small_instances/bath.txt")
     # graph = read_graph("instances/test_instances/g2000-50-42.graph")
     # print(f"edge number: {graph.number_of_edges()}")
-    S = generate_solution(graph, K)
+    S = repair(graph, K)
 
     # count = 0
     # for v in graph.nodes():

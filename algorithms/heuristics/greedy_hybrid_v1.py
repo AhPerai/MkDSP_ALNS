@@ -9,7 +9,7 @@ def _calc_factor(dom_value: int, degree: int, n_nodes: int) -> float:
     return factor
 
 
-def generate_solution(graph: Graph, K) -> Set[int]:
+def repair(graph: Graph, K) -> Set[int]:
     G = graph
 
     """
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     # graph = read_graph("instances/test_instances/g2000-50-42.graph")
     graph = read_graph("instances/cities_small_instances/belfast.txt")
     # print(f"edge number: {graph.number_of_edges()}")
-    S = generate_solution(graph, K)
+    S = repair(graph, K)
 
     # count = 0
     # for v in graph.nodes():
