@@ -1,7 +1,6 @@
 from algorithms.utils.graph_reader import read_graph, validate_solution
 from algorithms.solution_state import SolutionState
 from typing import Dict, Set, List
-from networkx import Graph
 from algorithms.utils.graph_visualizer import Visualizer
 
 
@@ -15,7 +14,6 @@ def repair(current_S: SolutionState) -> SolutionState:
     """
     G_info: Dict[int, List[int]] = dict()
     non_dominated: Set[int] = set()
-    S: Set[int] = set() if previous_S == None else previous_S
 
     for v in G.nodes():
         G_info[v] = [K, G.degree[v]]  # type: ignore

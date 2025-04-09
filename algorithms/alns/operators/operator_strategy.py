@@ -1,17 +1,19 @@
 from abc import ABC, abstractmethod
-from networkx import Graph
+from algorithms.solution_state import SolutionState
 
 
 class IOperatorStrategy(ABC):
 
-    def __init__(self, name: str, K: int):
+    def __init__(self, name: str):
         self._name = name
-        self._K = K
 
     @property
     def name(self) -> str:
         return self._name
 
     @abstractmethod
-    def operate(self, current_solution: Graph) -> Graph:
+    def operate(self, current_solution: SolutionState) -> SolutionState:
         return NotImplemented
+
+    def _prepare_solution(self, current_solution: SolutionState) -> SolutionState:
+        pass
