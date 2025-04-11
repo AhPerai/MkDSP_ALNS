@@ -1,64 +1,89 @@
-from algorithms.utils.graph_reader import read_graph, validate_solution
-from algorithms.solution_state import SolutionState
-from typing import Dict, Set, List
+from algorithms.solution_state import SolutionState, Index
+from algorithms.utils.graph_reader import validate_solution
 from algorithms.utils.graph_visualizer import Visualizer
+import pprint
 
 
 def repair(current_S: SolutionState) -> SolutionState:
     G = current_S.G
 
-    """
-    non_dominated = G.nodes; its a Set containing only the nodes' id
-    G_info is a dict where: node_id -> [node_degree, K_value]
-    S is the solution set
-    """
-    G_info: Dict[int, List[int]] = dict()
-    non_dominated: Set[int] = set()
-
-    for v in G.nodes():
-        G_info[v] = [K, G.degree[v]]  # type: ignore
-        non_dominated.add(v)
-
     # main loop
-    while len(non_dominated) > 0:
-        v = next(iter(non_dominated))
+    while len(current_S.non_dominated) > 0:
+        v = next(iter(current_S.non_dominated))
 
         # select the vertex with maximum degree
-        for u in non_dominated:
-            if G_info[v][0] < G_info[u][0]:
+        for u in current_S.non_dominated:
+            if current_S.G_info[v][Index.K] < current_S.G_info[u][Index.K]:
                 v = u
 
         # add the vertex to the solution
-        S.add(v)
+        current_S.S.add(v)
 
         for u in G[v]:
 
             # dominate the neighbors of V
-            if G_info[u][0] > 0:
-                G_info[u][0] -= 1
+            if current_S.G_info[u][Index.K] > 0:
+                current_S.G_info[u][Index.K] -= 1
 
             # update the node degree as the edge between U and V is no longer relevant
-            if G_info[u][1] > 0:
-                G_info[u][1] -= 1
+            if current_S.G_info[u][Index.DEGREE] > 0:
+                current_S.G_info[u][Index.DEGREE] -= 1
 
             # discard u, update the node degree between u and its neightboors, as u is no longer relevant
-            if G_info[u][0] == 0:
-                non_dominated.discard(u)
+            if current_S.G_info[u][Index.K] == 0:
+                current_S.dominated.add(u)
+                current_S.non_dominated.discard(u)
                 for w in G[u]:
                     # update the node degree as the edge between U and W is no longer relevant
-                    if G_info[w][1] > 0:
-                        G_info[w][1] -= 1
+                    if current_S.G_info[w][Index.DEGREE] > 0:
+                        current_S.G_info[w][Index.DEGREE] -= 1
 
-        non_dominated.discard(v)
+        current_S.non_dominated.discard(v)
 
     return S
 
 
+def init_state_by_solution(current_S: SolutionState) -> None:
+    if current_S.is_solution_empty():
+        return
+
+    current_S.dominated = set()
+    current_S.non_dominated = set(current_S._G.nodes())
+    current_S.G_info = [
+        [current_S.K, current_S.G.degree[node]] for node in current_S.G.nodes()
+    ]
+
+    G = current_S.G
+
+    for v in current_S.S:
+        for u in G[v]:
+            if current_S.G_info[u][Index.K] > 0:
+                current_S.G_info[u][Index.K] -= 1
+
+            if current_S.G_info[u][Index.DEGREE] > 0:
+                current_S.G_info[u][Index.DEGREE] -= 1
+
+            if current_S.G_info[u][Index.K] == 0:
+                current_S.dominated.add(u)
+                current_S.non_dominated.discard(u)
+                for w in G[u]:
+                    if current_S.G_info[w][Index.DEGREE] > 0:
+                        current_S.G_info[w][Index.DEGREE] -= 1
+
+    current_S.non_dominated.discard(v)
+
+
 if __name__ == "__main__":
     K = 2
-    graph = read_graph("instances/test_instances/g10-50-1234.graph")
-    S = repair(graph, K, {5})
-    # print(S)
+    S = SolutionState("instances/test_instances/g10-50-1234.graph", K)
+    print(f"Solution initialized: {S.is_state_clear()}")
+
+    S.G_info = [[S.K, S.G.degree[node]] for node in S.G.nodes()]
+    # pprint.pprint(S.G_info)
+    # pprint.pprint(S.non_dominated)
+    S = repair(S)
+    print(len(S.S))
+    pprint.pprint(S.G_info)
 
     # count = 0
     # for v in graph.nodes():

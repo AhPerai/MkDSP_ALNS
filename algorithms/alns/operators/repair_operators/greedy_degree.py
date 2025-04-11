@@ -1,5 +1,5 @@
 from algorithms.alns.operators.operator_strategy import IOperatorStrategy
-from algorithms.solution_state import SolutionState
+from algorithms.solution_state import SolutionState, Index
 from algorithms.heuristics.greedy_degree import repair
 import pprint
 
@@ -9,15 +9,14 @@ class GreedyDegreeOperator(IOperatorStrategy):
     def __init__(self):
         super().__init__("degree_greedy")
 
-    def operate(self, current_solution: SolutionState) -> SolutionState:
-        return repair(current_solution, self._K)
+    def operate(self, curr_S: SolutionState) -> SolutionState:
+        return repair(curr_S, self._K)
 
-    def init_state_info(self, current_solution: SolutionState) -> None:
-        if current_solution.is_state_clear():
-            current_solution.G_info = [
-                [current_solution.K, current_solution.G.degree[node]]
-                for node in current_solution.G.nodes()
-            ]
+    def _init_state_info(self, curr_S: SolutionState) -> None:
+        curr_S.G_info = [[curr_S.K, curr_S.G.degree[node]] for node in curr_S.G.nodes()]
+
+    def _update_state_info(self, curr_S):
+        pass
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from algorithms.utils.graph_reader import read_graph
 from enum import IntEnum
 
 
-class Indexes(IntEnum):
+class Index(IntEnum):
     K = 0
     DEGREE = 1
     WEIGHT = 2
@@ -29,7 +29,7 @@ class SolutionState:
         return self._K
 
     @property
-    def current_S(self) -> Set[int]:
+    def S(self) -> Set[int]:
         return self._S
 
     @property
@@ -48,14 +48,19 @@ class SolutionState:
     def G_info(self, updated_info: List[List[int | float]]) -> None:
         self._G_info = updated_info
 
+    @non_dominated.setter
+    def non_dominated(self, non_dominated: Set[int]) -> None:
+        self._non_dominated = non_dominated
+
+    @dominated.setter
+    def dominated(self, dominated: Set[int]) -> None:
+        self._dominated = dominated
+
     def is_solution_empty(self) -> bool:
         return not self._S
 
     def is_state_clear(self) -> bool:
         return not self._S and not self._G_info
-
-    # def init_G_info(self, K: int):
-    #     self._G_info = [[node, K] for node in self._G.nodes()]
 
 
 if __name__ == "__main__":
