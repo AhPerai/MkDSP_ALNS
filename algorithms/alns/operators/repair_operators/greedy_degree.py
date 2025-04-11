@@ -9,8 +9,8 @@ class GreedyDegreeOperator(IOperatorStrategy):
     def __init__(self):
         super().__init__("degree_greedy")
 
-    def operate(self, curr_S: SolutionState) -> SolutionState:
-        return repair(curr_S, self._K)
+    def _modify_solution(self, curr_S: SolutionState) -> SolutionState:
+        return repair(curr_S)
 
     def _init_state_info(self, curr_S: SolutionState) -> None:
         curr_S.G_info = [[curr_S.K, curr_S.G.degree[node]] for node in curr_S.G.nodes()]

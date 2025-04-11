@@ -11,7 +11,7 @@ class IOperatorStrategy(ABC):
     def name(self) -> str:
         return self._name
 
-    def _operate(self, current_solution: SolutionState) -> SolutionState:
+    def operate(self, current_solution: SolutionState) -> SolutionState:
         self.__prepare_solution(current_solution)
         return self._modify_solution(current_solution)
 
