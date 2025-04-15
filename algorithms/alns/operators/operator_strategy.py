@@ -12,7 +12,7 @@ class IOperatorStrategy(ABC):
         return self._name
 
     def operate(self, current_solution: SolutionState) -> SolutionState:
-        self.__prepare_solution(current_solution)
+        self._prepare_solution(current_solution)
         return self._modify_solution(current_solution)
 
     @abstractmethod
@@ -20,15 +20,15 @@ class IOperatorStrategy(ABC):
         return NotImplemented
 
     @abstractmethod
-    def _init_state_info(self, current_solution: SolutionState) -> None:
+    def _init_state_info(self, current_solution: SolutionState) -> SolutionState:
         return NotImplemented
 
     @abstractmethod
-    def _update_state_info(self, current_solution: SolutionState) -> None:
+    def _update_state_info(self, current_solution: SolutionState) -> SolutionState:
         return NotImplemented
 
-    def __prepare_solution(self, current_solution: SolutionState) -> None:
+    def _prepare_solution(self, current_solution: SolutionState) -> SolutionState:
         if current_solution.is_state_clear():
-            self._init_state_info(current_solution)
+            return self._init_state_info(current_solution)
         else:
-            self._update_state_info(current_solution)
+            return self._update_state_info(current_solution)

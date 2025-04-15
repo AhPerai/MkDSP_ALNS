@@ -15,69 +15,57 @@ class GreedyDegreeOperator(IOperatorStrategy):
         super().__init__("degree_greedy")
 
     def _modify_solution(self, curr_S: SolutionState) -> SolutionState:
-        print("-- REPAIRING THE SOLUTION --")
         return repair(curr_S)
 
-    def _init_state_info(self, curr_S: SolutionState) -> None:
+    def _init_state_info(self, curr_S: SolutionState) -> SolutionState:
         curr_S.G_info = [[curr_S.K, curr_S.G.degree[node]] for node in curr_S.G.nodes()]
+        return curr_S
 
-    def _update_state_info(self, curr_S):
+    def _update_state_info(self, curr_S) -> SolutionState:
         for v in curr_S.non_dominated:
             for u in curr_S.G[v]:
                 if u in curr_S.non_dominated:
                     curr_S.G_info[u][Index.DEGREE] += 1
+        return curr_S
 
 
 if __name__ == "__main__":
-    # Configuration parameters
+    # Step 1: Initialize and repair once
     K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/york.txt"
-    DESTROY_FACTOR = 0.05
-    SEED = 1234
-    ITERATIONS = 100
+    S = SolutionState("instances/test_instances/g10-50-1234.graph", K)
 
-    # Create the initial solution state
-    S = SolutionState(INSTANCE_PATH, K)
-
-    # Initialize the repair operator (GreedyDegreeOperator) and the destroy operator
     repair_op = GreedyDegreeOperator()
-    S = repair_op.operate(S)  # First repair (builds the initial solution)
+    S = repair_op.operate(S)
 
+    # Step 2: Destroy some nodes
+    SEED = 1234
+    DESTROY_FACTOR = 0.05
     rng = random.default_rng(SEED)
-    d_factor = int(len(S.G) * DESTROY_FACTOR)
-    destroy_op = RandomDestroy(d_factor, rng)
+    destroy_op = RandomDestroy(int(len(S.G) * DESTROY_FACTOR), rng)
 
-    # Run the cycle for ITERATIONS iterations
-    for i in range(ITERATIONS):
-        # Step 1: Destroy some nodes
-        S_destroyed = destroy_op.operate(S)
+    S_destroyed = destroy_op.operate(S)
 
-        # Step 2: Repair the destroyed solution — this triggers _update_state_info internally
-        S_updated = repair_op.operate(S_destroyed)
+    # Step 3: Repair again — this will trigger _update_state_info
+    S_updated = repair_op.operate(S_destroyed)
 
-        # Step 3: Recompute a fresh state as a reference
-        S_expected = init_state_by_solution(S_updated)
+    # Step 4: Create a fresh, clean state to compare with
+    S_expected = init_state_by_solution(S_updated)
 
-        # Step 4: Check and print comparisons between S_updated and S_expected
-        print(f"\n--- Iteration {i+1} ---")
-        print(f"Solution sets match:        {S_updated.S == S_expected.S}")
-        print(
-            f"Dominated sets match:       {S_updated.dominated == S_expected.dominated}"
-        )
-        print(
-            f"Non-dominated sets match:   {S_updated.non_dominated == S_expected.non_dominated}"
-        )
+    # Step 5: Check if both states match
+    print("\n--- State Consistency Check ---")
+    print(f"Solution sets match:        {S_updated.S == S_expected.S}")
+    print(f"Dominated sets match:       {S_updated.dominated == S_expected.dominated}")
+    print(
+        f"Non-dominated sets match:   {S_updated.non_dominated == S_expected.non_dominated}"
+    )
 
-        # Verify that G_info (e.g., K and Degree values) match for all nodes
-        deg_match = all(
-            S_updated.G_info[v] == S_expected.G_info[v] for v in S_updated.G.nodes()
-        )
-        print(f"Node info (K, Degree, etc.) match: {deg_match}")
-
-        # Optionally print differences for debugging purposes:
-        # for v in S_updated.G.nodes():
-        #     if S_updated.G_info[v] != S_expected.G_info[v]:
-        #         print(f"Node {v}: Updated {S_updated.G_info[v]}, Expected {S_expected.G_info[v]}")
-
-        # Update S for the next iteration
-        S = S_updated
+    # for v in S_updated.G.nodes():
+    #     if S_updated.G_info[v] != S_expected.G_info[v]:
+    #         print(
+    #             f"❌ Node {v}: Expected {S_expected.G_info[v]}, Got {S_updated.G_info[v]}"
+    #         )
+    # check degrees and K values too
+    deg_match = all(
+        S_updated.G_info[v] == S_expected.G_info[v] for v in S_updated.G.nodes()
+    )
+    print(f"Node info (K, Degree) match: {deg_match}")

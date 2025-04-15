@@ -11,6 +11,7 @@ class RandomRepair(IOperatorStrategy):
         rng: random.Generator = random.default_rng(),
     ):
         super().__init__("random_repair")
+        self._rng = rng
 
     def _modify_solution(self, current_solution) -> SolutionState:
         return repair(current_solution, self._rng)
