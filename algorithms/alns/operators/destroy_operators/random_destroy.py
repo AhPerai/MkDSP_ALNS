@@ -1,14 +1,14 @@
 from algorithms.alns.operators.operator_strategy import IOperatorStrategy
+from algorithms.solution_state import SolutionState
 from algorithms.solution_state import Index
 import numpy.random as random
 
-from algorithms.solution_state import SolutionState
-from algorithms.alns.operators.repair_operators.greedy_degree import (
-    GreedyDegreeOperator,
-)
-from algorithms.heuristics.greedy_degree import init_state_by_solution
-from algorithms.utils.graph_visualizer import Visualizer
-import pprint
+# from algorithms.alns.operators.repair_operators.greedy_degree import (
+#     GreedyDegreeOperator,
+# )
+# from algorithms.heuristics.greedy_degree import init_state_by_solution
+# from algorithms.utils.graph_visualizer import Visualizer
+# import pprint
 
 
 class RandomDestroy(IOperatorStrategy):
@@ -66,13 +66,12 @@ class RandomDestroy(IOperatorStrategy):
 
 if __name__ == "__main__":
     K = 2
-    S = SolutionState("instances/cities_small_instances/belfast.txt", K)
+    S = SolutionState("instances/cities_small_instances/liverpool.txt", K)
 
     r_operator = GreedyDegreeOperator()
     r_operator._init_state_info(S)
     S = r_operator.operate(S)
-    print(len(S.S))
-
+    print(f"Initial Solution size: {len(S.S)}")
     print(f"Intersection - Solution and Dominated: {len(S.S & S.dominated)}")
     print(f"Intersection - Solution and Non-dominated: {len(S.S & S.non_dominated)}")
     print(
@@ -83,7 +82,7 @@ if __name__ == "__main__":
     DESTROY_FACTOR = 0.05
     rng = random.default_rng(SEED)
     d_factor = int(len(S.G) * DESTROY_FACTOR)
-    print(f"grau de destruição {d_factor} ")
+    print(f"\ngrau de destruição: {d_factor} ")
 
     d_operator = RandomDestroy(d_factor, rng)
     S = d_operator.operate(S)
@@ -95,7 +94,6 @@ if __name__ == "__main__":
 
     print(f"Solution sets are equivalent: {S.S == corrected_S.S}")
     print(f"Dominated node sets are equivalent: {S.dominated == corrected_S.dominated}")
-    print(f"difference: {corrected_S.dominated - S.dominated}")
     print(
         f"Non-Dominated node sets are equivalent: {S.non_dominated == corrected_S.non_dominated}"
     )
