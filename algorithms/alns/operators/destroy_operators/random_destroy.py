@@ -1,6 +1,5 @@
 from algorithms.alns.operators.operator_strategy import IOperatorStrategy
-from algorithms.solution_state import SolutionState
-from algorithms.solution_state import Index
+from algorithms.solution_state import SolutionState, Index
 import numpy.random as random
 
 # from algorithms.alns.operators.repair_operators.greedy_degree import (
