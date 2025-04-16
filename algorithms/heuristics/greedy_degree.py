@@ -1,7 +1,4 @@
 from algorithms.solution_state import SolutionState, Index
-from algorithms.utils.graph_reader import validate_solution
-from algorithms.utils.graph_visualizer import Visualizer
-import pprint
 import copy
 
 

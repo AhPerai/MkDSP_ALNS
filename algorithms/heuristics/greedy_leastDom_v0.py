@@ -1,7 +1,4 @@
-from algorithms.utils.graph_reader import read_graph, validate_solution
-from algorithms.utils.graph_visualizer import Visualizer
-from typing import Dict, Set, List
-from networkx import Graph
+from algorithms.solution_state import SolutionState, Index
 
 
 def repair(graph: Graph, K):
@@ -48,19 +45,9 @@ def repair(graph: Graph, K):
 
 if __name__ == "__main__":
     K = 2
-    graph = read_graph("instances/cities_small_instances/bath.txt")
-    # graph = read_graph("instances/test_instances/g2000-50-42.graph")
-    # print(f"edge number: {graph.number_of_edges()}")
-    S = repair(graph, K)
+    S = SolutionState("instances/cities_small_instances/belfast.txt", K)
+    print(f"Solution initialized: {S.is_state_clear()}")
 
-    # count = 0
-    # for v in graph.nodes():
-    #     if graph.degree[v] == 0:  # type: ignore
-    #         count += 1
-
-    # print(f"orphan nodes: {count}")
-
-    print(f"\nIs Solution Valid: {validate_solution(graph, S, K)}\nSize: {len(S)}")
-
-    # vis = Visualizer(graph)
-    # vis.show(S)
+    S.G_info = [[S.K, S.G.degree[node]] for node in S.G.nodes()]
+    S = repair(S)
+    print(len(S.S))
