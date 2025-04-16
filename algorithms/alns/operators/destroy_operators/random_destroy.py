@@ -1,4 +1,4 @@
-from algorithms.alns.operators.operator_strategy import IOperatorStrategy
+from algorithms.alns.operators.operator_strategy import OperatorStrategy
 from algorithms.solution_state import SolutionState, Index
 import numpy.random as random
 
@@ -10,7 +10,7 @@ import numpy.random as random
 # import pprint
 
 
-class RandomDestroy(IOperatorStrategy):
+class RandomDestroy(OperatorStrategy):
 
     def __init__(
         self,

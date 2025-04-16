@@ -7,7 +7,7 @@ from networkx import Graph
 from acept_criterion.accept_strategy import AcceptStrategy
 from stop.stop_condition import StopCondition
 from select.select_strategy import SelectStrategy
-from operators.operator_strategy import IOperatorStrategy
+from operators.operator_strategy import OperatorStrategy
 
 
 class OperatorType(Enum):
@@ -29,21 +29,21 @@ class ALNS:
         self._accept = accept
         self._select = select
 
-        self._destroy_operators: Dict[str, IOperatorStrategy] = {}
-        self._repair_operators: Dict[str, IOperatorStrategy] = {}
+        self._destroy_operators: Dict[str, OperatorStrategy] = {}
+        self._repair_operators: Dict[str, OperatorStrategy] = {}
 
-        self._operators: Dict[OperatorType, Dict[str, IOperatorStrategy]] = {
+        self._operators: Dict[OperatorType, Dict[str, OperatorStrategy]] = {
             OperatorType.DESTROY: self._destroy_operators,
             OperatorType.REPAIR: self._repair_operators,
         }
 
-    def add_destroy_operator(self, operator: IOperatorStrategy):
+    def add_destroy_operator(self, operator: OperatorStrategy):
         self.__add_operator(OperatorType.DESTROY, operator)
 
-    def add_repair_operator(self, operator: IOperatorStrategy):
+    def add_repair_operator(self, operator: OperatorStrategy):
         self.__add_operator(OperatorType.REPAIR, operator)
 
-    def __add_operator(self, type: OperatorType, operator: IOperatorStrategy):
+    def __add_operator(self, type: OperatorType, operator: OperatorStrategy):
         self._operators[type][operator.name] = operator
 
     def execute(self, initial_S: Graph) -> Graph:

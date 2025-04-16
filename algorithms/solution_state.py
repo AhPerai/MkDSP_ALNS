@@ -2,6 +2,7 @@ from networkx import Graph
 from typing import Set, List
 from algorithms.utils.graph_reader import read_graph
 from enum import IntEnum
+import copy
 
 
 class Index(IntEnum):
@@ -19,6 +20,9 @@ class SolutionState:
         self._S: Set[int] = set()
         self._dominated: Set[int] = set()
         self._non_dominated: Set[int] = set(self._G.nodes())
+
+        self.__info_indexes: Set[int] = set()
+        self.__initial_G_info = []
 
     @property
     def G(self) -> Graph:
@@ -56,11 +60,31 @@ class SolutionState:
     def dominated(self, dominated: Set[int]) -> None:
         self._dominated = dominated
 
+    def add_info_index(self, indexes: List[Index]) -> None:
+        self.__info_indexes.update(indexes)
+
     def is_solution_empty(self) -> bool:
         return not self._S
 
     def is_state_clear(self) -> bool:
         return not self._S and not self._G_info
+
+    def reset_G_info(self):
+        self.G_info = self.__initial_G_info
+
+    def init_G_info(self) -> None:
+        for node in self.G.nodes():
+            node_info = [0] * len(self.__info_indexes)
+            if Index.K in self.__info_indexes:
+                node_info[Index.K] = self.K
+            if Index.DEGREE in self.__info_indexes:
+                node_info[Index.DEGREE] = self.G.degree[node]
+            if Index.WEIGHT in self.__info_indexes:
+                node_info[Index.WEIGHT] = 0.0
+
+            self.G_info.append(node_info)
+
+        self.__initial_G_info = copy.deepcopy(self.G_info)
 
 
 if __name__ == "__main__":
