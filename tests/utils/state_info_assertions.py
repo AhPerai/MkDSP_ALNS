@@ -3,29 +3,30 @@ from algorithms.solution_state import SolutionState, Index
 import copy
 
 
-def assert_state_equal(S_updated, S_expected, i, SEED, check_only_non_dominated=False):
-    assert S_updated.S == S_expected.S, (
-        f"[FAIL] Iteration {i} | SEED {SEED} | Solution sets differ.\n"
-        f"Symmetric difference: {S_updated.S ^ S_expected.S}"
-    )
-    assert S_updated.dominated == S_expected.dominated, (
-        f"[FAIL] Iteration {i} | SEED {SEED} | Dominated sets differ.\n"
-        f"Symmetric difference: {len(S_updated.dominated)} - {len(S_expected.dominated)}"
-    )
-    assert S_updated.non_dominated == S_expected.non_dominated, (
-        f"[FAIL] Iteration {i} | SEED {SEED} | Non-dominated sets differ.\n"
-        f"Symmetric difference: {S_updated.non_dominated ^ S_expected.non_dominated}"
-    )
+def assert_state_equal(
+    given_solution, expected_solution, i, SEED, check_only_non_dominated=False
+):
+    assert (
+        given_solution.S == expected_solution.S
+    ), f"[FAIL] Solution sets differ at iteration {i}, seed {SEED}"
+    assert (
+        given_solution.dominated == expected_solution.dominated
+    ), f"[FAIL] Dominated sets differ at iteration {i}, seed {SEED}"
+    assert (
+        given_solution.non_dominated == expected_solution.non_dominated
+    ), f"[FAIL] Non-dominated sets differ at iteration {i}, seed {SEED}"
 
     nodes_to_check = (
-        S_updated.non_dominated if check_only_non_dominated else S_updated.G.nodes()
+        given_solution.non_dominated
+        if check_only_non_dominated
+        else given_solution.G.nodes()
     )
 
     for v in nodes_to_check:
-        assert S_updated.G_info[v] == S_expected.G_info[v], (
+        assert given_solution.G_info[v] == expected_solution.G_info[v], (
             f"[FAIL] Iteration {i} | SEED {SEED} | Node {v} info differs.\n"
-            f"S_updated.G_info[{v}]: {S_updated.G_info[v]}\n"
-            f"S_expected.G_info[{v}]: {S_expected.G_info[v]}"
+            f"given_solution.G_info[{v}]: {given_solution.G_info[v]}\n"
+            f"expected_solution.G_info[{v}]: {expected_solution.G_info[v]}"
         )
 
 

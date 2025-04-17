@@ -53,21 +53,3 @@ def _read_city_instance(file) -> Graph:
     graph.add_edges_from(edges)
 
     return graph
-
-
-def validate_solution(G: Graph, solution_set: Set, K: int) -> bool:
-    isSolutionValid = True
-    for v in G.nodes():
-        count_neighboor = 0
-
-        if v in solution_set:
-            continue
-
-        for u in G[v]:
-            if u in solution_set:
-                count_neighboor += 1
-        if count_neighboor < K:
-            print(f"\n{v} has only {count_neighboor} neighboors")
-            isSolutionValid = False
-
-    return isSolutionValid
