@@ -70,9 +70,13 @@ class SolutionState:
         return not self._S and not self._G_info
 
     def reset_G_info(self):
-        self.G_info = self.__initial_G_info
+        self.G_info = copy.deepcopy(self.__initial_G_info)
 
     def init_G_info(self) -> None:
+        if self._G_info:
+            self.reset_G_info
+            return
+
         for node in self.G.nodes():
             node_info = [0] * len(self.__info_indexes)
             if Index.K in self.__info_indexes:

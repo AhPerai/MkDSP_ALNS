@@ -29,7 +29,7 @@ class OperatorStrategy(ABC):
         return NotImplemented
 
     @abstractmethod
-    def _update_state_info(self, current_solution: SolutionState) -> None:
+    def _update_state_info(self, current_solution: SolutionState) -> SolutionState:
         return NotImplemented
 
     def init_state_info(self, initial_state: SolutionState) -> None:

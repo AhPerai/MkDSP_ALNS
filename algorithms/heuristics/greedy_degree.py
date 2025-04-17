@@ -1,5 +1,4 @@
 from algorithms.solution_state import SolutionState, Index
-import copy
 
 
 def repair(current_S: SolutionState) -> SolutionState:
@@ -38,39 +37,6 @@ def repair(current_S: SolutionState) -> SolutionState:
         current_S.non_dominated.discard(v)
 
     return current_S
-
-
-def init_state_by_solution(current_S: SolutionState) -> SolutionState:
-    new_state = copy.deepcopy(current_S)
-
-    if new_state.is_solution_empty():
-        return
-
-    new_state.dominated = set()
-    new_state.non_dominated = set(new_state._G.nodes())
-    new_state.G_info = [
-        [new_state.K, new_state.G.degree[node]] for node in new_state.G.nodes()
-    ]
-
-    G = new_state.G
-
-    for v in new_state.S:
-        for u in G[v]:
-            new_state.G_info[u][Index.K] -= 1
-
-            if new_state.G_info[u][Index.DEGREE] > 0:
-                new_state.G_info[u][Index.DEGREE] -= 1
-
-            if new_state.G_info[u][Index.K] == 0 and u not in new_state.S:
-                new_state.dominated.add(u)
-                new_state.non_dominated.discard(u)
-                for w in G[u]:
-                    if new_state.G_info[w][Index.DEGREE] > 0:
-                        new_state.G_info[w][Index.DEGREE] -= 1
-
-        new_state.non_dominated.discard(v)
-
-    return new_state
 
 
 if __name__ == "__main__":

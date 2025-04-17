@@ -16,8 +16,5 @@ class RandomRepair(OperatorStrategy):
     def _modify_solution(self, current_solution) -> SolutionState:
         return repair(current_solution, self._rng)
 
-    def _init_state_info(self, curr_S):
-        curr_S.G_info = [[curr_S.K] for _ in curr_S.G.nodes()]
-
     def _update_state_info(self, curr_S):
         pass

@@ -56,9 +56,6 @@ class RandomDestroy(OperatorStrategy):
 
         return current_solution
 
-    def _init_state_info(self, current_solution):
-        pass
-
     def _update_state_info(self, current_solution):
         pass
 
