@@ -42,7 +42,7 @@ def repair(curr_S: SolutionState) -> SolutionState:
 
         curr_S.non_dominated.discard(v)
 
-    return S
+    return curr_S
 
 
 if __name__ == "__main__":

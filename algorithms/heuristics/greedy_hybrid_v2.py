@@ -1,7 +1,7 @@
 from algorithms.solution_state import SolutionState, Index
 
 
-def __calc_weight(dom_value: int, degree: int, n_nodes: int) -> float:
+def calc_weight(dom_value: int, degree: int, n_nodes: int) -> float:
     denominator = 1 if n_nodes - dom_value == 0 else (n_nodes - dom_value)
     factor: float = (degree * degree) / (denominator)
     return factor
@@ -15,7 +15,7 @@ def repair(current_S: SolutionState) -> SolutionState:
 
         if len(current_S.non_dominated) > 0:
             for u in current_S.non_dominated:
-                current_S.G_info[u][Index.WEIGHT] = __calc_weight(
+                current_S.G_info[u][Index.WEIGHT] = calc_weight(
                     int(current_S.G_info[u][Index.K]),
                     int(current_S.G_info[u][Index.DEGREE]),
                     len(current_S.non_dominated),
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         [
             S.K,
             S.G.degree[node],
-            __calc_weight(S.K, S.G.degree[node], len(S.non_dominated)),
+            calc_weight(S.K, S.G.degree[node], len(S.non_dominated)),
         ]
         for node in S.G.nodes()
     ]

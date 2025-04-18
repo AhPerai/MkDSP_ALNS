@@ -39,8 +39,7 @@ def init_state_k_only(current_S: SolutionState) -> SolutionState:
     expected_state.dominated = set()
     expected_state.non_dominated = set(expected_state.G.nodes())
 
-    expected_state.add_info_index([Index.K])
-    expected_state.init_G_info()
+    expected_state.reset_G_info()
 
     G = expected_state.G
 
@@ -100,8 +99,7 @@ def init_state_k_degree_weight(
     expected_state.dominated = set()
     expected_state.non_dominated = set(expected_state.G.nodes())
 
-    expected_state.add_info_index([Index.K, Index.DEGREE, Index.WEIGHT])
-    expected_state.init_G_info()
+    expected_state.reset_G_info()
 
     G = expected_state.G
 
