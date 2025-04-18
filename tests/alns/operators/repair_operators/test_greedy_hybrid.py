@@ -1,6 +1,6 @@
 import pytest
 
-from algorithms.solution_state import SolutionState
+from algorithms.solution_state import SolutionState, Index
 from algorithms.alns.operators.repair_operators.greedy_hybrid import (
     GreedyHybridOperator,
 )
@@ -69,14 +69,14 @@ def test_update_state_consistency(iterations):
             S_expected = init_state_k_degree_weight(S_destroyed, calc_weight)
 
             # Compare both ways of building the state
-            assert_state_equal(S_updated, S_expected, i, SEED, True)
+            assert_state_equal(S_updated, S_expected, i, SEED, [Index.K, Index.DEGREE])
 
             # Step 2b: Reconstruct with the repair operator
             S_modified = degree_repair_op._modify_solution(S_updated)
             S_expected = init_state_k_degree_weight(S_modified, calc_weight)
 
             # Validate again
-            assert_state_equal(S_modified, S_expected, i, SEED, True)
+            assert_state_equal(S_modified, S_expected, i, SEED, [Index.K, Index.DEGREE])
         else:
             # Use a different operator
             S_updated = random_repair_op.operate(S_destroyed)

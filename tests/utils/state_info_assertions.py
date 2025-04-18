@@ -4,8 +4,21 @@ import copy
 
 
 def assert_state_equal(
-    given_solution, expected_solution, i, SEED, check_only_non_dominated=False
+    given_solution,
+    expected_solution,
+    i,
+    SEED,
+    info_to_check=None,
+    nodes_to_check=None,
 ):
+
+    nodes_to_check = (
+        expected_solution.G.nodes() if nodes_to_check == None else nodes_to_check
+    )
+
+    if info_to_check is None:
+        info_to_check = [Index.K]
+
     assert (
         given_solution.S == expected_solution.S
     ), f"[FAIL] Solution sets differ at iteration {i}, seed {SEED}"
@@ -16,18 +29,15 @@ def assert_state_equal(
         given_solution.non_dominated == expected_solution.non_dominated
     ), f"[FAIL] Non-dominated sets differ at iteration {i}, seed {SEED}"
 
-    nodes_to_check = (
-        given_solution.non_dominated
-        if check_only_non_dominated
-        else given_solution.G.nodes()
-    )
-
     for v in nodes_to_check:
-        assert given_solution.G_info[v] == expected_solution.G_info[v], (
-            f"[FAIL] Iteration {i} | SEED {SEED} | Node {v} info differs.\n"
-            f"given_solution.G_info[{v}]: {given_solution.G_info[v]}\n"
-            f"expected_solution.G_info[{v}]: {expected_solution.G_info[v]}"
-        )
+        for index in info_to_check:
+            assert (
+                given_solution.G_info[v][index] == expected_solution.G_info[v][index]
+            ), (
+                f"[FAIL] Iteration {i} | SEED {SEED} | Node {v} info differs.\n"
+                f"given{v}    : {given_solution.G_info[v]}\n"
+                f"expected {v}: {expected_solution.G_info[v]}"
+            )
 
 
 def init_state_k_only(current_S: SolutionState) -> SolutionState:
@@ -105,13 +115,6 @@ def init_state_k_degree_weight(
 
     for v in expected_state.S:
 
-        for u in current_S.non_dominated:
-            current_S.G_info[u][Index.WEIGHT] = calc_weight(
-                int(current_S.G_info[u][Index.K]),
-                int(current_S.G_info[u][Index.DEGREE]),
-                len(current_S.non_dominated),
-            )
-
         for u in G[v]:
             expected_state.G_info[u][Index.K] -= 1
 
@@ -126,5 +129,12 @@ def init_state_k_degree_weight(
                         expected_state.G_info[w][Index.DEGREE] -= 1
 
         expected_state.non_dominated.discard(v)
+
+        for v in expected_state.non_dominated:
+            expected_state.G_info[v][Index.WEIGHT] = calc_weight(
+                int(expected_state.G_info[v][Index.K]),
+                int(expected_state.G_info[v][Index.DEGREE]),
+                len(expected_state.non_dominated),
+            )
 
     return expected_state
