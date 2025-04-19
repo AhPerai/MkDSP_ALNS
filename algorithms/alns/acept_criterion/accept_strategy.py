@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
-from alns.outcome import Outcome
+from algorithms.alns.outcome import Outcome
 from networkx import Graph
 
 
@@ -26,7 +26,7 @@ class AcceptStrategy(ABC):
             return (best_S, new_S, Outcome.BETTER)
 
         # If accepted by Metropolis criterion (or any other criteria that may be implemented in the future)
-        if self._accept(curr_S, new_S):
+        if self._accept(len(curr_S), len(new_S)):
             return (best_S, new_S, Outcome.ACCEPTED)
 
         return (best_S, curr_S, Outcome.REJECTED)

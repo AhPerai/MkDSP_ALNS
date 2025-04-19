@@ -2,7 +2,7 @@ from select.select_strategy import SelectStrategy
 from alns.outcome import Outcome
 from typing import List, Tuple
 import numpy as np
-from numpy import Generator
+from numpy.random import Generator
 
 
 class RouletteWheelSelect(SelectStrategy):
@@ -11,9 +11,9 @@ class RouletteWheelSelect(SelectStrategy):
         self,
         num_destroy_op: int,
         num_repair_op: int,
-        rng: Generator,
         segment_lenght: int,
         reaction_factor: float,
+        rng: Generator = np.random.default_rng(),
     ):
         super().__init__(num_destroy_op, num_repair_op, rng)
         self._segment_lenght = segment_lenght
