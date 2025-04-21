@@ -16,6 +16,52 @@ def test_initial_array_sizes():
     assert rws.repair_attempts.shape[0] == 2
 
 
+@pytest.mark.parametrize(
+    "num_d_op, num_r_op, d_op_weights, r_op_weights",
+    [
+        (2, 2, [1.0, 1.0], [1.0, 1.0]),  # Equal weights
+        (3, 3, [2.0, 3.0, 5.0], [4.0, 1.0, 5.0]),  # Unequal weights case
+        (4, 4, [0.0, 1.0, 2.0, 1.0], [0.0, 0.5, 1.5, 1.0]),  # Zero weights case
+        (1, 1, [10.0], [20.0]),  # Single operator case
+    ],
+)
+def test_roulette_selection_weights_probabilies_sum_equals_one(
+    num_d_op, num_r_op, d_op_weights, r_op_weights
+):
+    rws = RouletteWheelSelect(num_d_op, num_r_op, 5, 0.5)
+
+    rws._destroy_op_weights = np.array(d_op_weights)
+    rws._repair_op_weights = np.array(r_op_weights)
+
+    d_operator_probabilities = rws._destroy_op_weights / np.sum(rws._destroy_op_weights)
+    r_operator_probabilities = rws._repair_op_weights / np.sum(rws._repair_op_weights)
+
+    assert_almost_equal(np.sum(d_operator_probabilities), 1.0)
+    assert_almost_equal(np.sum(r_operator_probabilities), 1.0)
+
+
+@pytest.mark.parametrize(
+    "seed, expected_r_op_id, expected_d_op_id",
+    [
+        (3, 0, 0),  # 0.00 <= percent < 0.25
+        (2, 1, 1),  # 0.25 <= percent < 0.50
+        (23, 2, 2),  # 0.50 <= percent < 0.75
+        (5, 3, 3),  # 0.75 <= percent < 1.00
+    ],
+)
+def test_roulette_selection_respects_weights(seed, expected_r_op_id, expected_d_op_id):
+    rng = np.random.default_rng(seed)
+    rws = RouletteWheelSelect(4, 4, 5, 0.5, rng)
+
+    rws._destroy_op_weights = np.array([1.0, 1.0, 1.0, 1.0])
+    rws._repair_op_weights = np.array([1.0, 1.0, 1.0, 1.0])
+
+    d, r = rws.select()
+
+    assert_equal(d, expected_d_op_id)
+    assert_equal(r, expected_r_op_id)
+
+
 def test_attempt_counters_update():
     rws = RouletteWheelSelect(2, 2, 5, 0.5)
     rws._destroy_op_weights = np.array([0.5, 0.5])

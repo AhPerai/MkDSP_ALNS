@@ -95,13 +95,12 @@ class RouletteWheelSelect(SelectStrategy):
 
 
 if __name__ == "__main__":
-    ITERATION = 10
-    rws = RouletteWheelSelect(1, 1, ITERATION, 0.5)
+    rng = np.random.default_rng(0)
+    rws = RouletteWheelSelect(4, 4, 5, 0.5, rng)
 
-    for i in range(ITERATION + 1):
-        if i == ITERATION:
-            print(rws._iteration, 0)
-        else:
-            print(rws._iteration, i)
+    rws._destroy_op_weights = np.array([1.0, 1.0, 1.0, 1.0])
+    rws._repair_op_weights = np.array([1.0, 1.0, 1.0, 1.0])
 
-        rws.update(0, 0, Outcome.BEST)
+    d, r = rws.select()
+
+    print(f"destroy: {d}, repair: {r}")
