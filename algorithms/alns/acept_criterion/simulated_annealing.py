@@ -1,7 +1,6 @@
 from algorithms.alns.acept_criterion.accept_strategy import AcceptStrategy
 from numpy.random import Generator
 import numpy as np
-import numpy.random as random
 
 
 class SimulatedAnnealing(AcceptStrategy):

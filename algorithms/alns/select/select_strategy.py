@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
-from numpy import Generator
 import numpy as np
-from alns.outcome import Outcome
+from numpy.random import Generator
+from algorithms.alns.outcome import Outcome
 
 
 class SelectStrategy(ABC):
@@ -13,6 +13,14 @@ class SelectStrategy(ABC):
         self._destroy_op_weights = np.ones(num_destroy_op)
         self._repair_op_weights = np.ones(num_repair_op)
         self._rng = rng
+
+    @property
+    def num_destroy_op(self) -> int:
+        return self._num_destroy_op
+
+    @property
+    def num_repair_op(self) -> int:
+        return self._num_repair_op
 
     @property
     def destroy_op_weights(self) -> int:

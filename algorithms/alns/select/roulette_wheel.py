@@ -1,8 +1,8 @@
-from select.select_strategy import SelectStrategy
-from alns.outcome import Outcome
+from algorithms.alns.select.select_strategy import SelectStrategy
+from algorithms.alns.outcome import Outcome
 from typing import List, Tuple
-import numpy as np
 from numpy.random import Generator
+import numpy as np
 
 
 class RouletteWheelSelect(SelectStrategy):
@@ -20,13 +20,29 @@ class RouletteWheelSelect(SelectStrategy):
         self._reaction_factor = reaction_factor
 
         # Track current iteration
-        self._iteration = 1
+        self._iteration = 0
 
         # Track scores and attempts per iteration/segment
         self._destroy_scores = np.zeros(num_destroy_op)
         self._repair_scores = np.zeros(num_repair_op)
         self._destroy_attempts = np.zeros(num_destroy_op)
         self._repair_attempts = np.zeros(num_repair_op)
+
+    @property
+    def repair_scores(self):
+        return self._repair_scores
+
+    @property
+    def destroy_scores(self):
+        return self._destroy_scores
+
+    @property
+    def destroy_attempts(self):
+        return self._destroy_attempts
+
+    @property
+    def repair_attempts(self):
+        return self._repair_attempts
 
     def _roulette_wheel_selection(self, operators_weigths: List[float]) -> int:
         # normalizes the weights
@@ -76,3 +92,16 @@ class RouletteWheelSelect(SelectStrategy):
         self._destroy_scores.fill(0)
         self._repair_scores.fill(0)
         self._iteration = 0
+
+
+if __name__ == "__main__":
+    ITERATION = 10
+    rws = RouletteWheelSelect(1, 1, ITERATION, 0.5)
+
+    for i in range(ITERATION + 1):
+        if i == ITERATION:
+            print(rws._iteration, 0)
+        else:
+            print(rws._iteration, i)
+
+        rws.update(0, 0, Outcome.BEST)
