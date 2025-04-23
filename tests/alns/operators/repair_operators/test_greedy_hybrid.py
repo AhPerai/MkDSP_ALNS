@@ -56,14 +56,14 @@ def test_update_state_consistency(iterations):
     degree_repair_op = GreedyHybridOperator()
     destroy_op = RandomDestroy(d_factor, rng)
     degree_repair_op.init_state_info(S)
-    S = degree_repair_op.operate(S)
+    S = random_repair_op.operate(S)
 
     # Run the cycle for N iterations
     for i in range(iterations):
         # Step 1: Destroy part of the solution
         S_destroyed = destroy_op.operate(S)  # Step 1: Destroy some nodes
 
-        if rng.random() < 0.7:
+        if rng.random() < 0.5:
             # Step 2a: Update state manually
             S_updated = degree_repair_op._update_state_info(S_destroyed)
             S_expected = init_state_k_degree_weight(S_destroyed, calc_weight)

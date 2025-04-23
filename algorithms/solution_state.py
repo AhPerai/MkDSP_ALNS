@@ -45,6 +45,10 @@ class SolutionState:
         return self._dominated
 
     @property
+    def info_indexes(self) -> Set[int]:
+        return self.__info_indexes
+
+    @property
     def G_info(self) -> List[List[int | float]]:
         return self._G_info
 

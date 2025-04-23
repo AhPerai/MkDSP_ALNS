@@ -101,7 +101,7 @@ def init_state_k_degree(current_S: SolutionState) -> SolutionState:
 def init_state_k_degree_weight(
     current_S: SolutionState, calc_weight: Callable[[int, int, int], float]
 ) -> SolutionState:
-    expected_state = init_state_k_degree(current_S)
+    expected_state = copy.deepcopy(current_S)
 
     if expected_state.is_solution_empty():
         return expected_state
