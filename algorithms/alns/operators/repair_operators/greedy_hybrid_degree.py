@@ -1,12 +1,12 @@
 from algorithms.alns.operators.operator_strategy import OperatorStrategy
 from algorithms.solution_state import SolutionState, Index
-from algorithms.heuristics.greedy_hybrid_v1 import repair
+from algorithms.heuristics.greedy_hybrid_v2 import repair
 
 
-class GreedyHybridOperator(OperatorStrategy):
+class GreedyHybridDegreeOperator(OperatorStrategy):
 
     def __init__(self):
-        super().__init__("hybrid_greedy")
+        super().__init__("degree_hybrid_greedy")
         self._info_indexes += [Index.DEGREE, Index.WEIGHT]
 
     def _modify_solution(self, curr_S: SolutionState) -> SolutionState:

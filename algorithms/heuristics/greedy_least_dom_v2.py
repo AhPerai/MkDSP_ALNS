@@ -14,10 +14,10 @@ def repair(curr_S: SolutionState) -> SolutionState:
         if they're equal it's decided by their current degree value
         """
         for u in curr_S.non_dominated:
-            if curr_S.G_info[v][Index.K] < curr_S.G_info[u][Index.K]:
+            if curr_S.G_info[u][Index.K] > curr_S.G_info[v][Index.K]:
                 v = u
-            elif curr_S.G_info[v][Index.K] == curr_S.G_info[u][Index.K]:
-                if curr_S.G_info[v][Index.DEGREE] < curr_S.G_info[u][Index.DEGREE]:
+            elif curr_S.G_info[u][Index.K] == curr_S.G_info[v][Index.K]:
+                if curr_S.G_info[u][Index.DEGREE] > curr_S.G_info[v][Index.DEGREE]:
                     v = u
 
         # add the vertex to the solution
@@ -45,10 +45,18 @@ def repair(curr_S: SolutionState) -> SolutionState:
     return curr_S
 
 
+import os
+
 if __name__ == "__main__":
     K = 2
-    S = SolutionState("instances/cities_small_instances/belfast.txt", K)
-    print(f"Solution initialized: {S.is_state_clear()}")
-    S.G_info = [[S.K, S.G.degree[node]] for node in S.G.nodes()]
-    S = repair(S)
-    print(len(S.S))
+    INSTANCE_FOLDER = "instances/cities_small_instances"
+    for filename in os.listdir(INSTANCE_FOLDER):
+        city_name = filename.replace(".txt", "")
+        path = os.path.join(INSTANCE_FOLDER, filename)
+
+        S = SolutionState(path, K)
+        S.add_info_index([Index.K, Index.DEGREE])
+        S.init_G_info()
+        S = repair(S)
+
+        print(f"Instance: {city_name} | Result: {len(S.S)}")

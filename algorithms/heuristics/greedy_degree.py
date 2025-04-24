@@ -10,7 +10,7 @@ def repair(current_S: SolutionState) -> SolutionState:
 
         # select the vertex with maximum degree
         for u in current_S.non_dominated:
-            if current_S.G_info[v][Index.K] < current_S.G_info[u][Index.K]:
+            if current_S.G_info[u][Index.DEGREE] > current_S.G_info[v][Index.DEGREE]:
                 v = u
 
         # add the vertex to the solution
@@ -39,26 +39,28 @@ def repair(current_S: SolutionState) -> SolutionState:
     return current_S
 
 
+import os
+
 if __name__ == "__main__":
     K = 2
-    S = SolutionState("instances/cities_small_instances/belfast.txt", K)
-    print(f"Solution initialized: {S.is_state_clear()}")
+    INSTANCE_FOLDER = "instances/cities_small_instances"
 
-    S.G_info = [[S.K, S.G.degree[node]] for node in S.G.nodes()]
-    # pprint.pprint(S.G_info)
-    # pprint.pprint(S.non_dominated)
-    S = repair(S)
-    print(len(S.S))
-    # pprint.pprint(S.G_info)
+    for filename in os.listdir(INSTANCE_FOLDER):
+        city_name = filename.replace(".txt", "")
+        path = os.path.join(INSTANCE_FOLDER, filename)
 
-    # count = 0
-    # for v in graph.nodes():
-    #     if graph.degree[v] == 0:  # type: ignore
-    #         count += 1
+        S = SolutionState(path, K)
+        S.add_info_index([Index.K, Index.DEGREE])
+        S.init_G_info()
+        S = repair(S)
 
-    # print(f"orphan nodes: {count}")
+        print(f"Instance: {city_name} | Result: {len(S.S)}")
 
-    # vis = Visualizer(graph)
-    # vis.show(S)
-
-    # print(f"\nIs Solution Valid: {validate_solution(graph, S, K)}\nSize: {len(S)}")
+        # K = 2
+        # CITY = "belfast"
+        # PATH = "instances/cities_small_instances/{CITY}.txt"
+        # S = SolutionState("instances/cities_small_instances/belfast.txt", K)
+        # S.add_info_index([Index.K, Index.DEGREE])
+        # S.init_G_info()
+        # S = repair(S)
+        # print(f"Instance: {CITY} | Result: {len(S.S)}")

@@ -1,8 +1,8 @@
 import pytest
 
 from algorithms.solution_state import SolutionState, Index
-from algorithms.alns.operators.repair_operators.greedy_hybrid import (
-    GreedyHybridOperator,
+from algorithms.alns.operators.repair_operators.greedy_hybrid_dom import (
+    GreedyHybridDominatedOperator,
 )
 
 from tests.utils.valid_solution_assertions import (
@@ -21,7 +21,7 @@ from tests.utils.state_info_assertions import (
 from algorithms.heuristics.greedy_hybrid_v1 import calc_weight
 
 
-@pytest.mark.parametrize("operator_class", [GreedyHybridOperator])
+@pytest.mark.parametrize("operator_class", [GreedyHybridDominatedOperator])
 @pytest.mark.parametrize(
     "instance_path,K", [("instances/cities_small_instances/york.txt", 2)]
 )
@@ -31,7 +31,7 @@ def test_greedy_hybrid_operator_generate_valid_solution(
     validate_operator_generate_valid_solution(operator_class, instance_path, K)
 
 
-@pytest.mark.parametrize("operator_class", [GreedyHybridOperator])
+@pytest.mark.parametrize("operator_class", [GreedyHybridDominatedOperator])
 @pytest.mark.parametrize(
     "instance_path,K", [("instances/cities_small_instances/york.txt", 2)]
 )
@@ -53,10 +53,10 @@ def test_update_state_consistency(iterations):
 
     # Initialing operators
     random_repair_op = RandomRepair(rng)
-    degree_repair_op = GreedyHybridOperator()
+    degree_repair_op = GreedyHybridDominatedOperator()
     destroy_op = RandomDestroy(d_factor, rng)
     degree_repair_op.init_state_info(S)
-    S = random_repair_op.operate(S)
+    S = degree_repair_op.operate(S)
 
     # Run the cycle for N iterations
     for i in range(iterations):

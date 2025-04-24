@@ -1,7 +1,8 @@
 from typing import Dict, Tuple
 from enum import Enum
 
-import numpy.random as random
+import numpy as np
+import random
 import copy
 
 from algorithms.solution_state import SolutionState
@@ -23,7 +24,7 @@ class ALNS:
         stop: StopCondition,
         accept: AcceptStrategy,
         select: SelectStrategy,
-        rng: random.Generator = random.default_rng(),
+        rng: np.random.Generator = np.random.default_rng(),
     ):
         self._rng = rng
         self._stop = stop
@@ -43,7 +44,12 @@ class ALNS:
 
     @property
     def operators(self):
-        self._operators
+        return self._operators
+
+    def randomize_rng(self):
+        seed = random.randint(0, 2**32 - 1)
+        print(f"RNG initialized with seed: {seed}")
+        self._rng = np.random.default_rng(seed)
 
     def add_destroy_operator(self, operator: OperatorStrategy):
         self.__add_operator(OperatorType.DESTROY, operator)
@@ -69,7 +75,10 @@ class ALNS:
 
         op_name, initial_repair_operator = self.__repair_op_list[1]
         initial_repair_operator.operate(initial_S)
-        print(len(initial_S.S))
+
+        for d_name, d_operator in self.__destroy_op_list:
+            d_operator.remove_value = int(len(initial_S.S) * 0.55)
+            # print(f"destroy value: {d_operator.remove_value}")
 
     def validate(self):
         if (
@@ -120,36 +129,42 @@ from algorithms.alns.operators.repair_operators.greedy_degree import (
 from algorithms.alns.operators.repair_operators.greedy_least_dom import (
     GreedyLeastDominatedOperator,
 )
-from algorithms.alns.operators.repair_operators.greedy_hybrid import (
-    GreedyHybridOperator,
+from algorithms.alns.operators.repair_operators.greedy_hybrid_dom import (
+    GreedyHybridDominatedOperator,
+)
+from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (
+    GreedyHybridDegreeOperator,
 )
 from algorithms.alns.operators.repair_operators.random_repair import RandomRepair
 from algorithms.alns.operators.destroy_operators.random_destroy import RandomDestroy
 
+import os
+
 if __name__ == "__main__":
     #  fixed variables
     K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/bath.txt"
-    DESTROY_FACTOR = 0.075
-    SEED = 63
+    INSTANCE_PATH = "instances/cities_small_instances/belfast.txt"
+    SEED = 123
     rng = np.random.default_rng(SEED)
 
-    # solution state
-    initial_S = SolutionState(INSTANCE_PATH, K)
-
     # operators
+
+    # repair
     random_repair_op = RandomRepair(rng)
     degree_repair_op = GreedyDegreeOperator()
     least_dom_repair_op = GreedyLeastDominatedOperator()
-    hybrid_repair_op = GreedyHybridOperator()
-    destroy_op = RandomDestroy(int(len(initial_S.G) * DESTROY_FACTOR), rng)
+    hybrid_repair_op_v1 = GreedyHybridDominatedOperator()
+    hybrid_repair_op_v2 = GreedyHybridDegreeOperator()
+    # destroy
+    destroy_op = RandomDestroy(rng)
 
     d_op_list = [destroy_op]
     r_op_list = [
         random_repair_op,
         degree_repair_op,
         least_dom_repair_op,
-        hybrid_repair_op,
+        hybrid_repair_op_v1,
+        hybrid_repair_op_v2,
     ]
 
     # stop condition
@@ -176,5 +191,16 @@ if __name__ == "__main__":
     for r_operator in r_op_list:
         alns.add_repair_operator(r_operator)
 
+    results = []
+    # for _ in range(10):
+    # alns.randomize_rng()
+
+    initial_S = SolutionState(INSTANCE_PATH, K)
     best_solution = alns.execute(initial_S)
-    print(len(best_solution.S))
+    results.append(len(best_solution.S))
+
+    best = min(results)
+    avg = np.mean(results)
+    std = np.std(results)
+
+    print(f"Instance: {INSTANCE_PATH} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}")
