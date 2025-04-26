@@ -1,7 +1,8 @@
 from algorithms.solution_state import SolutionState, Index
+import numpy.random as random
 
 
-def repair(curr_S: SolutionState) -> SolutionState:
+def greedy_repair(curr_S: SolutionState) -> SolutionState:
     G = curr_S.G
 
     # main loop
@@ -30,9 +31,38 @@ def repair(curr_S: SolutionState) -> SolutionState:
     return curr_S
 
 
-import os
+def pseudo_greedy_repair(curr_S: SolutionState, alpha: float) -> SolutionState:
+    G = curr_S.G
+
+    # main loop
+    while len(curr_S.non_dominated) > 0:
+        candidate_nodes = {u: curr_S.G_info[u][Index.K] for u in curr_S.non_dominated}
+        max_K = max(candidate_nodes.values())
+        min_K = 1
+
+        threshold = max_K - min_K * (max_K - min_K)
+        RCL = [u for u, k in candidate_nodes.items() if k >= threshold]
+        v = random.choice(RCL)
+
+        curr_S.S.add(v)
+
+        for u in G[v]:
+            # dominate the neighboors of V
+            curr_S.G_info[u][Index.K] -= 1
+
+            # if u is dominated, discard it
+            if curr_S.G_info[u][Index.K] == 0 and u not in curr_S.S:
+                curr_S.dominated.add(u)
+                curr_S.non_dominated.discard(u)
+
+        curr_S.non_dominated.discard(v)
+
+    return curr_S
+
 
 if __name__ == "__main__":
+    import os
+
     K = 2
     INSTANCE_FOLDER = "instances/cities_small_instances"
     for filename in os.listdir(INSTANCE_FOLDER):
@@ -42,6 +72,6 @@ if __name__ == "__main__":
         S = SolutionState(path, K)
         S.add_info_index([Index.K])
         S.init_G_info()
-        S = repair(S)
+        S = pseudo_greedy_repair(S, 0.3)
 
         print(f"Instance: {city_name} | Result: {len(S.S)}")

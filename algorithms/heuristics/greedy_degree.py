@@ -1,7 +1,8 @@
 from algorithms.solution_state import SolutionState, Index
+import numpy.random as random
 
 
-def repair(current_S: SolutionState) -> SolutionState:
+def greedy_repair(current_S: SolutionState) -> SolutionState:
     G = current_S.G
 
     # main loop
@@ -39,9 +40,44 @@ def repair(current_S: SolutionState) -> SolutionState:
     return current_S
 
 
-import os
+def pseudo_greedy_repair(current_S: SolutionState, alpha: float):
+    G = current_S.G
+
+    while len(current_S.non_dominated) > 0:
+        candidate_nodes = {
+            u: current_S.G_info[u][Index.DEGREE] for u in current_S.non_dominated
+        }
+        max_degree = max(candidate_nodes.values())
+        min_degree = min(candidate_nodes.values())
+
+        threshold = max_degree - alpha * (max_degree - min_degree)
+        RCL = [u for u, degree in candidate_nodes.items() if degree >= threshold]
+
+        v = random.choice(RCL)
+
+        current_S.S.add(v)
+
+        for u in G[v]:
+            current_S.G_info[u][Index.K] -= 1
+
+            if current_S.G_info[u][Index.DEGREE] > 0:
+                current_S.G_info[u][Index.DEGREE] -= 1
+
+            if current_S.G_info[u][Index.K] == 0 and u not in current_S.S:
+                current_S.dominated.add(u)
+                current_S.non_dominated.discard(u)
+                for w in G[u]:
+                    if current_S.G_info[w][Index.DEGREE] > 0:
+                        current_S.G_info[w][Index.DEGREE] -= 1
+
+        current_S.non_dominated.discard(v)
+
+    return current_S
+
 
 if __name__ == "__main__":
+    import os
+
     K = 2
     INSTANCE_FOLDER = "instances/cities_small_instances"
 
@@ -52,15 +88,6 @@ if __name__ == "__main__":
         S = SolutionState(path, K)
         S.add_info_index([Index.K, Index.DEGREE])
         S.init_G_info()
-        S = repair(S)
+        S = pseudo_greedy_repair(S, 0.3)
 
         print(f"Instance: {city_name} | Result: {len(S.S)}")
-
-        # K = 2
-        # CITY = "belfast"
-        # PATH = "instances/cities_small_instances/{CITY}.txt"
-        # S = SolutionState("instances/cities_small_instances/belfast.txt", K)
-        # S.add_info_index([Index.K, Index.DEGREE])
-        # S.init_G_info()
-        # S = repair(S)
-        # print(f"Instance: {CITY} | Result: {len(S.S)}")
