@@ -49,6 +49,7 @@ class SimulatedAnnealing(AcceptStrategy):
 
     def _accept(self, curr_S_value: int, new_S_value: int) -> bool:
         p = np.exp(-(new_S_value - curr_S_value) / self._temperature)
+        self.update_values()
         return self._rng.uniform(0, 1) < p
 
     def update_values(self) -> None:

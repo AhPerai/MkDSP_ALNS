@@ -1,9 +1,11 @@
 from algorithms.solution_state import SolutionState, Index
 
 
-def validate_operator_solution_dominates_graph(operator_class, instance_path, K):
+def validate_operator_solution_dominates_graph(
+    operator_class, instance_path, K, greedy_alpha
+):
     S = SolutionState(instance_path, K)
-    op = operator_class()
+    op = operator_class(greedy_alpha)
     op.init_state_info(S)
     S = op.operate(S)
 
@@ -11,9 +13,11 @@ def validate_operator_solution_dominates_graph(operator_class, instance_path, K)
     __assert_dominated_solution(S)
 
 
-def validate_operator_generate_valid_solution(operator_class, instance_path, K):
+def validate_operator_generate_valid_solution(
+    operator_class, instance_path, K, greedy_alpha
+):
     S = SolutionState(instance_path, K)
-    operator = operator_class()
+    operator = operator_class(greedy_alpha)
     operator.init_state_info(S)
     S = operator.operate(S)
 

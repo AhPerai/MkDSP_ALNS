@@ -77,7 +77,7 @@ class ALNS:
         initial_repair_operator.operate(initial_S)
 
         for d_name, d_operator in self.__destroy_op_list:
-            d_operator.remove_value = int(len(initial_S.S) * 0.55)
+            d_operator.remove_value = int(len(initial_S.S) * 0.5)
             # print(f"destroy value: {d_operator.remove_value}")
 
     def validate(self):
@@ -108,10 +108,11 @@ class ALNS:
             best_S, curr_S, outcome = self._accept.evaluate_solution(
                 best_S, curr_S, new_S
             )
-            print(f"{self._stop.iteration}: {len(new_S.S)} STATUS: {outcome.label}")
+            print(
+                f"{self._stop.iteration}: {len(new_S.S)} STATUS: {outcome.label} TEMPERATURE: {self._accept.current_temperature}"
+            )
 
             self._select.update(destroy_idx, repair_idx, outcome)
-            self._accept.update_values()
 
         return best_S
 
@@ -143,18 +144,19 @@ import os
 if __name__ == "__main__":
     #  fixed variables
     K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/belfast.txt"
-    SEED = 123
+    INSTANCE_PATH = "instances/cities_small_instances/glasgow.txt"
+    SEED = 653
+    GREEDY_ALPHA = 0.1
     rng = np.random.default_rng(SEED)
 
     # operators
 
     # repair
     random_repair_op = RandomRepair(rng)
-    degree_repair_op = GreedyDegreeOperator()
-    least_dom_repair_op = GreedyLeastDominatedOperator()
-    hybrid_repair_op_v1 = GreedyHybridDominatedOperator()
-    hybrid_repair_op_v2 = GreedyHybridDegreeOperator()
+    degree_repair_op = GreedyDegreeOperator(GREEDY_ALPHA)
+    least_dom_repair_op = GreedyLeastDominatedOperator(GREEDY_ALPHA)
+    hybrid_repair_op_v1 = GreedyHybridDominatedOperator(GREEDY_ALPHA)
+    hybrid_repair_op_v2 = GreedyHybridDegreeOperator(GREEDY_ALPHA)
     # destroy
     destroy_op = RandomDestroy(rng)
 
@@ -170,7 +172,7 @@ if __name__ == "__main__":
     # stop condition
     stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 1000)
     # acceptance criterion
-    simulated_annealing = SimulatedAnnealing(7.5, 0.05, 0.95, rng)
+    simulated_annealing = SimulatedAnnealing(5, 0.5, 0.995, rng)
     # select strategy
     seg_roulette_wheel = RouletteWheelSelect(
         len(d_op_list), len(r_op_list), 5, 0.5, rng
