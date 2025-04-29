@@ -11,6 +11,8 @@ from algorithms.alns.stop.stop_condition import StopCondition
 from algorithms.alns.select.select_strategy import SelectStrategy
 from algorithms.alns.operators.operator_strategy import OperatorStrategy
 
+from algorithms.alns.event_handler import Event, EventHandler
+
 
 class OperatorType(Enum):
     DESTROY = 1
@@ -24,12 +26,14 @@ class ALNS:
         stop: StopCondition,
         accept: AcceptStrategy,
         select: SelectStrategy,
+        event_handler: EventHandler = EventHandler(),
         rng: np.random.Generator = np.random.default_rng(),
     ):
         self._rng = rng
         self._stop = stop
         self._accept = accept
         self._select = select
+        self._events = event_handler
 
         self._destroy_operators: Dict[str, OperatorStrategy] = {}
         self._repair_operators: Dict[str, OperatorStrategy] = {}
@@ -78,7 +82,13 @@ class ALNS:
 
         for d_name, d_operator in self.__destroy_op_list:
             d_operator.remove_value = int(len(initial_S.S) * 0.5)
-            # print(f"destroy value: {d_operator.remove_value}")
+
+        self._events.register(
+            Event.ON_ANY_OUTCOME,
+            lambda outcome, solution: print(
+                f"Solution: {len(solution.S)}, Outcome: {outcome.label}!"
+            ),
+        )
 
     def validate(self):
         if (
@@ -102,6 +112,10 @@ class ALNS:
             d_name, d_operator = self.__destroy_op_list[destroy_idx]
             r_name, r_operator = self.__repair_op_list[repair_idx]
 
+            self._events.trigger(
+                Event.ON_SELECT, (d_name, d_operator), (r_name, r_operator)
+            )
+
             destroyed_S = d_operator.operate(copy.deepcopy(curr_S))
             new_S = r_operator.operate(destroyed_S)
 
@@ -109,10 +123,14 @@ class ALNS:
                 best_S, curr_S, new_S
             )
             print(
-                f"{self._stop.iteration}: {len(new_S.S)} STATUS: {outcome.label} TEMPERATURE: {self._accept.current_temperature}"
+                f"Outcome: {outcome}, mapped event: {Event.get_event_by_outcome(outcome)}"
             )
+            self._events.on_outcome(outcome, new_S)
 
             self._select.update(destroy_idx, repair_idx, outcome)
+            self._events.trigger(
+                Event.ON_SELECT_UPDATE, destroy_idx, repair_idx, outcome
+            )
 
         return best_S
 
@@ -144,7 +162,7 @@ import os
 if __name__ == "__main__":
     #  fixed variables
     K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/glasgow.txt"
+    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
     SEED = 653
     GREEDY_ALPHA = 0.1
     rng = np.random.default_rng(SEED)
@@ -170,7 +188,7 @@ if __name__ == "__main__":
     ]
 
     # stop condition
-    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 1000)
+    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 200)
     # acceptance criterion
     simulated_annealing = SimulatedAnnealing(5, 0.5, 0.995, rng)
     # select strategy

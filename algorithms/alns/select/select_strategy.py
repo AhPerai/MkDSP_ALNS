@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple
+from typing import Tuple, List
 import numpy as np
 from numpy.random import Generator
 from algorithms.alns.outcome import Outcome
@@ -23,11 +23,11 @@ class SelectStrategy(ABC):
         return self._num_repair_op
 
     @property
-    def destroy_op_weights(self) -> int:
+    def destroy_op_weights(self) -> List[float]:
         return self._destroy_op_weights
 
     @property
-    def repair_op_weights(self) -> int:
+    def repair_op_weights(self) -> List[float]:
         return self._repair_op_weights
 
     @property
