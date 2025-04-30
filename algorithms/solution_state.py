@@ -94,11 +94,31 @@ class SolutionState:
 
         self.__initial_G_info = copy.deepcopy(self.G_info)
 
+    def copy(self) -> "SolutionState":
+        new = SolutionState.__new__(SolutionState)
+
+        new._K = self._K
+        new._G = self._G
+        new.__info_indexes = self.__info_indexes
+        new.__initial_G_info = self.__initial_G_info
+
+        new._G_info = [row[:] for row in self._G_info]
+        new._S = self._S.copy()
+        new._dominated = self._dominated.copy()
+        new._non_dominated = self._non_dominated.copy()
+
+        return new
+
 
 if __name__ == "__main__":
-    K = 2
-    S = SolutionState("instances/test_instances/g10-50-1234.graph", K)
+    import timeit
 
-    for node in S.G.adj:
-        neighbors = list(S.G.adj[node])
-        print(f"{node}: {neighbors}")
+    K = 2
+    S = SolutionState("instances/cities_small_instances/belfast.txt", K)
+
+    # Timeit setup
+    deepcopy_time = timeit.timeit(lambda: copy.deepcopy(S), number=100)
+    custom_copy_time = timeit.timeit(lambda: S.copy(), number=100)
+
+    print(f"deepcopy_time: {deepcopy_time}")
+    print(f"custom_copy_time: {custom_copy_time}")
