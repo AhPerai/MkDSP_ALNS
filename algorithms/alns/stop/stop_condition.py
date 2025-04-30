@@ -19,7 +19,7 @@ class StopCondition:
 
         self._method = method
         self._limit = limit
-        self._starting_time = time.perf_counter()
+        self._starting_time = None
         self._curr_iteration = 0
 
         self._methods = {
@@ -33,6 +33,13 @@ class StopCondition:
     @property
     def iteration(self):
         return self._curr_iteration
+
+    @property
+    def starting_time(self):
+        return self._starting_time
+
+    def init_time(self) -> None:
+        self._starting_time = time.perf_counter()
 
     def stop(self) -> bool:
         self.update_iteration()

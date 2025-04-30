@@ -72,7 +72,7 @@ def test_attempt_counters_update():
     assert rws.destroy_attempts[d] == 1
     assert rws.repair_attempts[r] == 1
 
-    rws._reset()
+    rws._reset_operators()
 
     d, r = rws.select()
 
@@ -85,7 +85,7 @@ def test_reward_accumulation():
 
     rws.update(0, 0, Outcome.BEST)
     assert_equal(rws._destroy_scores[0], Outcome.BEST.reward)
-    rws._reset()
+    rws._reset_operators()
 
     outcomes = [Outcome.BEST, Outcome.ACCEPTED, Outcome.BETTER, Outcome.REJECTED]
     for outcome in outcomes:
@@ -106,20 +106,25 @@ def test_iteration_tracking():
             assert_equal(rws._iteration, i)
 
         rws.update(0, 0, Outcome.BEST)
+        rws.select()
 
 
 def test_reset_after_segment():
-    rws = RouletteWheelSelect(1, 1, 3, 0.5)
+    ITERATIONS = 3
+    rws = RouletteWheelSelect(1, 1, ITERATIONS, 0.5)
     rws._destroy_attempts[0] = 2
     rws._repair_attempts[0] = 2
     rws._destroy_scores[0] = 20
     rws._repair_scores[0] = 20
 
-    for _ in range(3):
+    for _ in range(ITERATIONS):
         rws.update(0, 0, Outcome.BEST)
+        rws.select()
 
-    assert_(np.all(rws._destroy_attempts == 0))
-    assert_(np.all(rws._repair_attempts == 0))
+    # select resets all attempts to zero, but increases to one by re selecting the operators
+    assert_(np.all(rws._destroy_attempts == 1))
+    assert_(np.all(rws._repair_attempts == 1))
+    # No more updates were called to scores should be zero
     assert_(np.all(rws._destroy_scores == 0))
     assert_(np.all(rws._repair_scores == 0))
 
