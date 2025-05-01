@@ -123,8 +123,8 @@ class ALNS:
         self.validate()
         self.setup(initial_S)
 
-        curr_S = copy.deepcopy(initial_S)
-        best_S = copy.deepcopy(initial_S)
+        curr_S = initial_S.copy()
+        best_S = initial_S.copy()
 
         while not self._stop.stop():
             print(self.stop.iteration)
@@ -137,7 +137,7 @@ class ALNS:
                 Event.ON_SELECT, (d_name, d_operator), (r_name, r_operator)
             )
 
-            destroyed_S = d_operator.operate(copy.deepcopy(curr_S))
+            destroyed_S = d_operator.operate(curr_S.copy())
             new_S = r_operator.operate(destroyed_S)
 
             best_S, curr_S, outcome = self._accept.evaluate_solution(
@@ -182,8 +182,8 @@ import os
 if __name__ == "__main__":
     #  fixed variables
     K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
-    SEED = 653
+    INSTANCE_PATH = "instances/cities_small_instances/glasgow.txt"
+    SEED = 51237823156
     GREEDY_ALPHA = 0.1
     rng = np.random.default_rng(SEED)
 
@@ -208,7 +208,7 @@ if __name__ == "__main__":
     ]
 
     # stop condition
-    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 1000)
+    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 2000)
     # acceptance criterion
     simulated_annealing = SimulatedAnnealing(5, 0.5, 0.995, rng)
     # select strategy
@@ -263,6 +263,7 @@ if __name__ == "__main__":
 
     print("3. Tracking Best Solution\n")
     pprint.pprint(alns.stats.best_solution_tracking)
-    print("4. Last Best Solution\n")
+
+    print("\n4. Last Best Solution")
     print(alns.stats.get_last_time_to_best())
     print(f"Instance: {INSTANCE_PATH} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}")

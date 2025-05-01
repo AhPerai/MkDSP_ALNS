@@ -21,14 +21,14 @@ class AcceptStrategy(ABC):
         Returns a Tuple with the Best Solution, Current Solution, Outcome
         """
         if len(new_S.S) < len(best_S.S):  # If new_S is the best found so far
-            return (copy.deepcopy(new_S), copy.deepcopy(new_S), Outcome.BEST)
+            return (new_S.copy(), new_S.copy(), Outcome.BEST)
 
         if len(new_S.S) < len(curr_S.S):  # If new_S is better than curr_S
-            return (best_S, copy.deepcopy(new_S), Outcome.BETTER)
+            return (best_S, new_S.copy(), Outcome.BETTER)
 
         if self._accept(
             len(curr_S.S), len(new_S.S)
         ):  # If accepted by Metropolis or other criterion
-            return (best_S, copy.deepcopy(new_S), Outcome.ACCEPTED)
+            return (best_S, new_S.copy(), Outcome.ACCEPTED)
 
         return (best_S, curr_S, Outcome.REJECTED)
