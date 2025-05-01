@@ -58,29 +58,30 @@ class Statistics:
 
     def get_iteration_and_time_on_best(self, new_best_solution):
         diff_time = time.perf_counter() - self.__start_time
-        self.track_time_to_best.append(
-            (len(new_best_solution), self.__alns.iteration, diff_time)
+        self.best_solution_tracking.append(
+            (len(new_best_solution.S), self.__alns.stop.iteration, diff_time)
         )
 
-    def update_operator_data_from_segment(self):
-        for idx_op in range(self.num_repair_op):
-            self.repair_operators_calls[idx_op].append(
-                self.__alns.select.repair_attempts[idx_op]
-            )
-            self.repair_operators_scores[idx_op].append(
-                self.__alns.select.repair_scores[idx_op]
-            )
-            self.repair_operators_weights[idx_op].append(
-                self.__alns.select.repair_op_weights[idx_op]
-            )
+    def update_operator_data_from_segment(self, destroy_idx, repair_idx, outcome):
+        if self.__alns.select.is_update_time():
+            for idx_op in range(self.num_repair_op):
+                self.repair_operators_calls[idx_op].append(
+                    self.__alns.select.repair_attempts[idx_op]
+                )
+                self.repair_operators_scores[idx_op].append(
+                    self.__alns.select.repair_scores[idx_op]
+                )
+                self.repair_operators_weights[idx_op].append(
+                    self.__alns.select.repair_op_weights[idx_op]
+                )
 
-        for idx_op in range(self.num_destroy_op):
-            self.destroy_operators_calls[idx_op].append(
-                self.__alns.select.destroy_attempts[idx_op]
-            )
-            self.destroy_operators_scores[idx_op].append(
-                self.__alns.select.destroy_scores[idx_op]
-            )
-            self.destroy_operators_weights[idx_op].append(
-                self.__alns.select.destroy_op_weights[idx_op]
-            )
+            for idx_op in range(self.num_destroy_op):
+                self.destroy_operators_calls[idx_op].append(
+                    self.__alns.select.destroy_attempts[idx_op]
+                )
+                self.destroy_operators_scores[idx_op].append(
+                    self.__alns.select.destroy_scores[idx_op]
+                )
+                self.destroy_operators_weights[idx_op].append(
+                    self.__alns.select.destroy_op_weights[idx_op]
+                )

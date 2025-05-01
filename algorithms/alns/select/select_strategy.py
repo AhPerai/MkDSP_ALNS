@@ -34,6 +34,9 @@ class SelectStrategy(ABC):
     def rng(self) -> Generator:
         return self._rng
 
+    def is_update_time(self) -> bool:
+        return False
+
     @abstractmethod
     def select(self) -> Tuple[int, int]:
         return NotImplemented

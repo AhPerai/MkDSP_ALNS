@@ -33,6 +33,10 @@ class RouletteWheelSelect(SelectStrategy):
         return self._repair_scores
 
     @property
+    def repair_scores(self):
+        return self._repair_scores
+
+    @property
     def destroy_scores(self):
         return self._destroy_scores
 
@@ -44,12 +48,15 @@ class RouletteWheelSelect(SelectStrategy):
     def repair_attempts(self):
         return self._repair_attempts
 
+    def is_update_time(self):
+        return self._iteration == self._segment_lenght
+
     def _roulette_wheel_selection(self, operators_weigths: List[float]) -> int:
         operators_probabilies = operators_weigths / np.sum(operators_weigths)
         return self._rng.choice(len(operators_weigths), p=operators_probabilies)
 
     def select(self) -> Tuple[int, int]:
-        if self._iteration == self._segment_lenght:
+        if self.is_update_time():
             self._reset_operators()
 
         d_idx = self._roulette_wheel_selection(self._destroy_op_weights)
@@ -66,7 +73,7 @@ class RouletteWheelSelect(SelectStrategy):
 
         self._iteration += 1
 
-        if self._iteration == self._segment_lenght:
+        if self.is_update_time():
             self._update_weights()
 
     def _update_weights(self):

@@ -47,8 +47,8 @@ class ALNS:
             OperatorType.REPAIR: self._repair_operators,
         }
 
-        self.__destroy_op_list: Tuple[OperatorStrategy]
-        self.__repair_op_list: Tuple[OperatorStrategy]
+        self._destroy_op_list: Tuple[OperatorStrategy]
+        self._repair_op_list: Tuple[OperatorStrategy]
 
     @property
     def events(self):
@@ -80,7 +80,6 @@ class ALNS:
 
     def randomize_rng(self):
         seed = random.randint(0, 2**32 - 1)
-        print(f"RNG initialized with seed: {seed}")
         self._rng = np.random.default_rng(seed)
 
     def add_destroy_operator(self, operator: OperatorStrategy):
@@ -93,23 +92,23 @@ class ALNS:
         self._operators[type][operator.name] = operator
 
     def _init_operators_list(self):
-        self.__destroy_op_list = tuple(self._destroy_operators.items())
-        self.__repair_op_list = tuple(self._repair_operators.items())
+        self._destroy_op_list = tuple(self._destroy_operators.items())
+        self._repair_op_list = tuple(self._repair_operators.items())
 
     def setup(self, initial_S: SolutionState):
         self._stop.init_time()
         self._init_operators_list()
 
-        operators_list = list(self.__destroy_op_list + self.__repair_op_list)
+        operators_list = list(self._destroy_op_list + self._repair_op_list)
         for op_name, operator in operators_list:
             initial_S.add_info_index(operator.info_indexes)
 
         initial_S.init_G_info()
 
-        op_name, initial_repair_operator = self.__repair_op_list[1]
+        op_name, initial_repair_operator = self._repair_op_list[1]
         initial_repair_operator.operate(initial_S)
 
-        for d_name, d_operator in self.__destroy_op_list:
+        for d_name, d_operator in self._destroy_op_list:
             d_operator.remove_value = int(len(initial_S.S) * 0.5)
 
         if self._track_stats:
@@ -128,10 +127,11 @@ class ALNS:
         best_S = copy.deepcopy(initial_S)
 
         while not self._stop.stop():
+            print(self.stop.iteration)
             destroy_idx, repair_idx = self._select.select()
 
-            d_name, d_operator = self.__destroy_op_list[destroy_idx]
-            r_name, r_operator = self.__repair_op_list[repair_idx]
+            d_name, d_operator = self._destroy_op_list[destroy_idx]
+            r_name, r_operator = self._repair_op_list[repair_idx]
 
             self._events.trigger(
                 Event.ON_SELECT, (d_name, d_operator), (r_name, r_operator)
@@ -208,12 +208,12 @@ if __name__ == "__main__":
     ]
 
     # stop condition
-    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 200)
+    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 1000)
     # acceptance criterion
     simulated_annealing = SimulatedAnnealing(5, 0.5, 0.995, rng)
     # select strategy
     seg_roulette_wheel = RouletteWheelSelect(
-        len(d_op_list), len(r_op_list), 5, 0.5, rng
+        len(d_op_list), len(r_op_list), 50, 0.5, rng
     )
 
     # initializing ALNS
@@ -244,4 +244,25 @@ if __name__ == "__main__":
     avg = np.mean(results)
     std = np.std(results)
 
+    import pprint
+
+    print(f"0. runtime duration: {alns.stats.get_runtime_duration()}")
+    # pprint.pprint(alns.stats.best_solution_tracking)
+    print("1. repair weight progression")
+    for op in range(len(alns.stats.repair_operators_weights)):
+        weights = alns.stats.repair_operators_weights[op]
+        formatted_weights = [f"{w:.2f}" for w in weights]
+        print(f"{alns._repair_op_list[op][0]}:\n {formatted_weights}\n")
+
+    # pprint.pprint(alns.stats.repair_operators_weights)
+    print("2. destroy weight progression")
+    for op in range(len(alns.stats.destroy_operators_weights)):
+        weights = alns.stats.destroy_operators_weights[op]
+        formatted_weights = [f"{w:.2f}" for w in weights]
+        print(f"{alns._destroy_op_list[op][0]}:\n {formatted_weights}\n")
+
+    print("3. Tracking Best Solution\n")
+    pprint.pprint(alns.stats.best_solution_tracking)
+    print("4. Last Best Solution\n")
+    print(alns.stats.get_last_time_to_best())
     print(f"Instance: {INSTANCE_PATH} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}")

@@ -63,7 +63,6 @@ class EventHandler:
                 callback(*args, **kwargs)
 
     def on_outcome(self, outcome: Outcome, solution: SolutionState):
-        print(solution)
         event = Event.get_event_by_outcome(outcome)
         if event:
-            self.trigger(event, outcome, solution)
+            self.trigger(event, solution)
