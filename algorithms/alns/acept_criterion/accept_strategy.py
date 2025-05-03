@@ -2,14 +2,12 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 from algorithms.alns.outcome import Outcome
 from algorithms.solution_state import SolutionState
-import copy
 
 
 class AcceptStrategy(ABC):
 
-    @abstractmethod
     def _accept(self, curr_S: int, new_S: int) -> bool:
-        return NotImplemented
+        return False
 
     def update_values(self) -> None:
         pass

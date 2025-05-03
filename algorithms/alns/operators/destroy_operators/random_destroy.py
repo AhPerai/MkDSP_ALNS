@@ -1,6 +1,7 @@
 from algorithms.alns.operators.operator_strategy import OperatorStrategy
 from algorithms.solution_state import SolutionState, Index
 import numpy.random as random
+import math
 
 # from algorithms.alns.operators.repair_operators.greedy_degree import (
 #     GreedyDegreeOperator,
@@ -14,22 +15,23 @@ class RandomDestroy(OperatorStrategy):
 
     def __init__(
         self,
+        destroy_factor: float,
         rng: random.Generator = random.default_rng(),
     ):
         super().__init__("random")
+        if not (0 < destroy_factor < 1):
+            raise ValueError("Destroy factor must be greater than 0 and lower than 1")
+        self._destroy_factor = destroy_factor
         self._rng = rng
 
     @property
-    def remove_value(self) -> str:
-        return self._remove_value
-
-    @remove_value.setter
-    def remove_value(self, value: int) -> None:
-        self._remove_value = value
+    def destroy_factor(self) -> str:
+        return self._destroy_factor
 
     def _modify_solution(self, current_solution):
+        remove_size = math.floor(self._destroy_factor * len(current_solution.S))
         to_remove = self._rng.choice(
-            list(current_solution.S), size=self.remove_value, replace=False
+            list(current_solution.S), size=remove_size, replace=False
         )
 
         # remove nodes that are part of the current solution

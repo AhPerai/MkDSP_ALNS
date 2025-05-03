@@ -64,12 +64,10 @@ def test_solution_copy_after_change():
     rng = random.default_rng(SEED)
 
     random_repair_op = RandomRepair(rng)
-    random_destroy_op = RandomDestroy(rng)
+    random_destroy_op = RandomDestroy(DESTROY_FACTOR, rng)
 
     random_repair_op.init_state_info(S)
     initial_S = random_repair_op.operate(S)
-
-    random_destroy_op.remove_value = int(len(S.S) * DESTROY_FACTOR)
     destroyed_S = random_destroy_op.operate(initial_S.copy())
 
     # After destruction, the solution should differ, both in memory location and in values

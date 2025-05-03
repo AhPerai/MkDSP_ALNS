@@ -3,7 +3,6 @@ from enum import Enum
 
 import numpy as np
 import random
-import copy
 
 from algorithms.solution_state import SolutionState
 from algorithms.alns.acept_criterion.accept_strategy import AcceptStrategy
@@ -108,12 +107,9 @@ class ALNS:
         op_name, initial_repair_operator = self._repair_op_list[1]
         initial_repair_operator.operate(initial_S)
 
-        for d_name, d_operator in self._destroy_op_list:
-            d_operator.remove_value = int(len(initial_S.S) * 0.5)
-
         if self._track_stats:
             self._stats = Statistics(self)
-            self.stats.add_data_trackers()
+            self.stats.add_ALNS_data_trackers()
 
     def validate(self):
         if self.n_destroy_operators == 0 or self.n_repair_operators == 0:
@@ -127,7 +123,7 @@ class ALNS:
         best_S = initial_S.copy()
 
         while not self._stop.stop():
-            print(self.stop.iteration)
+            # print(self.stop.iteration)
             destroy_idx, repair_idx = self._select.select()
 
             d_name, d_operator = self._destroy_op_list[destroy_idx]
@@ -144,7 +140,7 @@ class ALNS:
                 best_S, curr_S, new_S
             )
 
-            self._events.on_outcome(outcome, new_S)
+            self._events.on_outcome(outcome, new_S, r_name)
 
             self._select.update(destroy_idx, repair_idx, outcome)
             self._events.trigger(
@@ -182,9 +178,10 @@ import os
 if __name__ == "__main__":
     #  fixed variables
     K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/glasgow.txt"
-    SEED = 51237823156
+    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
+    SEED = 5432
     GREEDY_ALPHA = 0.1
+    DESTROY_FACTOR = 0.5
     rng = np.random.default_rng(SEED)
 
     # operators
@@ -196,7 +193,7 @@ if __name__ == "__main__":
     hybrid_repair_op_v1 = GreedyHybridDominatedOperator(GREEDY_ALPHA)
     hybrid_repair_op_v2 = GreedyHybridDegreeOperator(GREEDY_ALPHA)
     # destroy
-    destroy_op = RandomDestroy(rng)
+    destroy_op = RandomDestroy(DESTROY_FACTOR, rng)
 
     d_op_list = [destroy_op]
     r_op_list = [
@@ -210,7 +207,7 @@ if __name__ == "__main__":
     # stop condition
     stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 2000)
     # acceptance criterion
-    simulated_annealing = SimulatedAnnealing(5, 0.5, 0.995, rng)
+    simulated_annealing = SimulatedAnnealing(10, 1, 0.95, rng)
     # select strategy
     seg_roulette_wheel = RouletteWheelSelect(
         len(d_op_list), len(r_op_list), 50, 0.5, rng
@@ -248,18 +245,24 @@ if __name__ == "__main__":
 
     print(f"0. runtime duration: {alns.stats.get_runtime_duration()}")
     # pprint.pprint(alns.stats.best_solution_tracking)
-    print("1. repair weight progression")
-    for op in range(len(alns.stats.repair_operators_weights)):
-        weights = alns.stats.repair_operators_weights[op]
-        formatted_weights = [f"{w:.2f}" for w in weights]
-        print(f"{alns._repair_op_list[op][0]}:\n {formatted_weights}\n")
+    # print("1. repair weight progression")
+    # for op in range(len(alns.stats.repair_operators_weights)):
+    #     weights = alns.stats.repair_operators_weights[op]
+    #     formatted_weights = [f"{w:.2f}" for w in weights]
+    #     print(f"{alns._repair_op_list[op][0]}:\n {formatted_weights}\n")
+
+    # print("1.1 repair CALLS progression")
+    # for op in range(len(alns.stats.repair_operators_calls)):
+    #     calls = alns.stats.repair_operators_calls[op]
+    #     percent_calls = [f"{(c/50):.2f}" for c in calls]
+    #     print(f"{alns._repair_op_list[op][0]}:\n {percent_calls}\n")
 
     # pprint.pprint(alns.stats.repair_operators_weights)
-    print("2. destroy weight progression")
-    for op in range(len(alns.stats.destroy_operators_weights)):
-        weights = alns.stats.destroy_operators_weights[op]
-        formatted_weights = [f"{w:.2f}" for w in weights]
-        print(f"{alns._destroy_op_list[op][0]}:\n {formatted_weights}\n")
+    # print("2. destroy weight progression")
+    # for op in range(len(alns.stats.destroy_operators_weights)):
+    #     weights = alns.stats.destroy_operators_weights[op]
+    #     formatted_weights = [f"{w:.2f}" for w in weights]
+    #     print(f"{alns._destroy_op_list[op][0]}:\n {formatted_weights}\n")
 
     print("3. Tracking Best Solution\n")
     pprint.pprint(alns.stats.best_solution_tracking)

@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Dict, List, Callable
 from algorithms.alns.outcome import Outcome
 from algorithms.solution_state import SolutionState
+from algorithms.alns.operators.operator_strategy import OperatorStrategy
 
 
 class Event(Enum):
@@ -62,7 +63,7 @@ class EventHandler:
             for callback in self._listeners.get(event):
                 callback(*args, **kwargs)
 
-    def on_outcome(self, outcome: Outcome, solution: SolutionState):
+    def on_outcome(self, outcome: Outcome, solution: SolutionState, operator_name: str):
         event = Event.get_event_by_outcome(outcome)
         if event:
-            self.trigger(event, solution)
+            self.trigger(event, solution, operator_name)

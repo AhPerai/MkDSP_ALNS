@@ -4,7 +4,7 @@ from typing import List, Tuple, TYPE_CHECKING
 import time
 
 if TYPE_CHECKING:
-    from algorithms.alns.ALNS import ALNS  # only for type checking
+    from algorithms.alns.ALNS import ALNS
 
 
 class Statistics:
@@ -15,10 +15,20 @@ class Statistics:
         self.num_repair_op = self.__alns.n_repair_operators
         self.initialize_properties()
 
+        if self.num_destroy_op == 1 and self.num_repair_op == 1:
+            return
+
+        self.initialize_operators_metrics()
+
     def initialize_properties(self):
         self.__start_time = self.__alns.stop.starting_time
         self.__end_time = None
 
+        self.best_solution_tracking: List[Tuple[int, int, float, str]] = [
+            (0, 0, self.__start_time - self.__start_time, "None")
+        ]
+
+    def initialize_operators_metrics(self):
         self.destroy_operators_calls = [[] for _ in range(self.num_destroy_op)]
         self.destroy_operators_scores = [[] for _ in range(self.num_destroy_op)]
         self.destroy_operators_weights = [[1.0] for _ in range(self.num_destroy_op)]
@@ -27,19 +37,18 @@ class Statistics:
         self.repair_operators_scores = [[] for _ in range(self.num_repair_op)]
         self.repair_operators_weights = [[1.0] for _ in range(self.num_repair_op)]
 
-        self.best_solution_tracking: List[Tuple[int, int, float]] = [
-            (0, 0, self.__start_time - self.__start_time)
-        ]
-
     def get_runtime_duration(self):
         return self.__end_time - self.__start_time
 
     def get_last_time_to_best(self):
         return self.best_solution_tracking[-1]
 
-    def add_data_trackers(self):
+    def add_basic_data_tracker(self):
         self.track_finishing_time()
         self.track_time_to_best()
+
+    def add_ALNS_data_trackers(self):
+        self.add_basic_data_tracker()
         self.track_operators_performance()
 
     def track_finishing_time(self):
@@ -56,10 +65,15 @@ class Statistics:
     def register_end_time(self):
         self.__end_time = time.perf_counter()
 
-    def get_iteration_and_time_on_best(self, new_best_solution):
+    def get_iteration_and_time_on_best(self, new_best_solution, operator_name):
         diff_time = time.perf_counter() - self.__start_time
         self.best_solution_tracking.append(
-            (len(new_best_solution.S), self.__alns.stop.iteration, diff_time)
+            (
+                len(new_best_solution.S),
+                self.__alns.stop.iteration,
+                diff_time,
+                operator_name,
+            )
         )
 
     def update_operator_data_from_segment(self, destroy_idx, repair_idx, outcome):

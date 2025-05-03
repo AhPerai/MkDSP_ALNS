@@ -18,6 +18,8 @@ class GreedyHybridDominatedOperator(OperatorStrategy):
 
     def _update_state_info(self, curr_S: SolutionState) -> SolutionState:
         if curr_S.is_solution_empty():
+            for node in curr_S.G.nodes():
+                curr_S.G_info[node][Index.DEGREE] = curr_S.G.degree[node]
             curr_S.reset_G_info()
             return curr_S
 

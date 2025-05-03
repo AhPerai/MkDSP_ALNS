@@ -62,11 +62,10 @@ def test_update_state_consistency(iterations):
     # Initialing operators
     random_repair_op = RandomRepair(rng)
     main_operator = GreedyDegreeOperator(GREEDY_ALPHA)
-    destroy_op = RandomDestroy(rng)
+    destroy_op = RandomDestroy(DESTROY_FACTOR, rng)
 
     main_operator.init_state_info(S)
     S = main_operator.operate(S)
-    destroy_op.remove_value = int(len(S.S) * DESTROY_FACTOR)
 
     # Run the cycle for N iterations
     for i in range(iterations):

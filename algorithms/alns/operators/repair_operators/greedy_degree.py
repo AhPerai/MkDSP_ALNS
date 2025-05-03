@@ -19,6 +19,8 @@ class GreedyDegreeOperator(OperatorStrategy):
     def _update_state_info(self, curr_S: SolutionState) -> SolutionState:
         if curr_S.is_solution_empty():
             curr_S.reset_G_info()
+            for node in curr_S.G.nodes():
+                curr_S.G_info[node][Index.DEGREE] = curr_S.G.degree[node]
             return curr_S
 
         for v in curr_S.non_dominated:
