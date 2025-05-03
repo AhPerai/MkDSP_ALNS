@@ -1,6 +1,6 @@
 import numpy as np
 
-from algorithms.solution_state import SolutionState
+from algorithms.solution_state import SolutionState, Index
 from algorithms.alns.acept_criterion.accept_strategy import AcceptStrategy
 from algorithms.alns.stop.stop_condition import StopCondition
 from algorithms.alns.operators.operator_strategy import OperatorStrategy
@@ -80,6 +80,10 @@ class LNS:
 
         initial_repair_operator = RandomRepair(self._rng)
         initial_repair_operator.operate(initial_S)
+        # quick bug fix
+        if Index.DEGREE in initial_S.info_indexes:
+            for node in initial_S.G.nodes():
+                initial_S.G_info[node][Index.DEGREE] = 0
 
         if self._track_stats:
             self._stats = Statistics(self)
@@ -114,8 +118,8 @@ class LNS:
 
 
 if __name__ == "__main__":
-    from algorithms.alns.operators.repair_operators.greedy_degree import (
-        GreedyDegreeOperator,
+    from algorithms.alns.operators.repair_operators.greedy_least_dom import (
+        GreedyLeastDominatedOperator,
     )
     from algorithms.alns.acept_criterion.simulated_annealing import SimulatedAnnealing
 
@@ -141,7 +145,7 @@ if __name__ == "__main__":
     )
 
     # repair
-    lns.repair_operator = GreedyDegreeOperator(GREEDY_ALPHA)
+    lns.repair_operator = GreedyLeastDominatedOperator(GREEDY_ALPHA)
     # destroy
     lns.destroy_operator = RandomDestroy(DESTROY_FACTOR, rng)
 

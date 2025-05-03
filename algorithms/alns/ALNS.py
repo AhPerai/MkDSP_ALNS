@@ -4,7 +4,7 @@ from enum import Enum
 import numpy as np
 import random
 
-from algorithms.solution_state import SolutionState
+from algorithms.solution_state import SolutionState, Index
 from algorithms.alns.acept_criterion.accept_strategy import AcceptStrategy
 from algorithms.alns.stop.stop_condition import StopCondition
 from algorithms.alns.select.select_strategy import SelectStrategy
@@ -104,8 +104,12 @@ class ALNS:
 
         initial_S.init_G_info()
 
-        op_name, initial_repair_operator = self._repair_op_list[1]
+        initial_repair_operator = RandomRepair(self._rng)
         initial_repair_operator.operate(initial_S)
+        # quick bug fix
+        if Index.DEGREE in initial_S.info_indexes:
+            for node in initial_S.G.nodes():
+                initial_S.G_info[node][Index.DEGREE] = 0
 
         if self._track_stats:
             self._stats = Statistics(self)

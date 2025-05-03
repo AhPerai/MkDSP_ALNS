@@ -86,7 +86,7 @@ class SolutionState:
             if Index.K in self.__info_indexes:
                 node_info[Index.K] = self.K
             if Index.DEGREE in self.__info_indexes:
-                node_info[Index.DEGREE] = 0
+                node_info[Index.DEGREE] = self.G.degree[node]
             if Index.WEIGHT in self.__info_indexes:
                 node_info[Index.WEIGHT] = 0.0
 
