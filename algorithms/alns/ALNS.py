@@ -77,10 +77,6 @@ class ALNS:
     def n_destroy_operators(self):
         return len(self._operators[OperatorType.DESTROY])
 
-    def randomize_rng(self):
-        seed = random.randint(0, 2**32 - 1)
-        self._rng = np.random.default_rng(seed)
-
     def add_destroy_operator(self, operator: OperatorStrategy):
         self.__add_operator(OperatorType.DESTROY, operator)
 
@@ -177,19 +173,15 @@ from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (
 from algorithms.alns.operators.repair_operators.random_repair import RandomRepair
 from algorithms.alns.operators.destroy_operators.random_destroy import RandomDestroy
 
-import os
 
-if __name__ == "__main__":
+def run_ALNS(K, path):
     #  fixed variables
-    K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
-    SEED = 5432
     GREEDY_ALPHA = 0.1
     DESTROY_FACTOR = 0.5
-    rng = np.random.default_rng(SEED)
+    ITERATION = 10
+    rng = np.random.default_rng()
 
     # operators
-
     # repair
     random_repair_op = RandomRepair(rng)
     degree_repair_op = GreedyDegreeOperator(GREEDY_ALPHA)
@@ -209,9 +201,9 @@ if __name__ == "__main__":
     ]
 
     # stop condition
-    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 2000)
+    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, ITERATION)
     # acceptance criterion
-    simulated_annealing = SimulatedAnnealing(10, 1, 0.95, rng)
+    simulated_annealing = SimulatedAnnealing(10, 1, 0.99, rng)
     # select strategy
     seg_roulette_wheel = RouletteWheelSelect(
         len(d_op_list), len(r_op_list), 50, 0.5, rng
@@ -233,44 +225,47 @@ if __name__ == "__main__":
     for r_operator in r_op_list:
         alns.add_repair_operator(r_operator)
 
-    results = []
-    # for _ in range(10):
-    # alns.randomize_rng()
-
-    initial_S = SolutionState(INSTANCE_PATH, K)
+    initial_S = SolutionState(path, K)
     best_solution = alns.execute(initial_S)
-    results.append(len(best_solution.S))
+    return {
+        "ObjValue": len(best_solution.S),
+        "TimeToBest": alns.stats.get_last_time_to_best(),
+        "Runtime": alns.stats.get_runtime_duration(),
+    }
 
-    best = min(results)
-    avg = np.mean(results)
-    std = np.std(results)
+
+if __name__ == "__main__":
+    K = 2
+    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
+
+    results = []
+    for _ in range(5):
+        stats = run_ALNS(K, INSTANCE_PATH)
+        results.append(stats)
+
+    print("\n === RESULTS ===")
+    solution_sizes = [res["ObjValue"] for res in results]
+    ttb_time = [res["TimeToBest"][2] for res in results]
+    ttb_iteration = [res["TimeToBest"][1] for res in results]
+    runtime = [res["Runtime"] for res in results]
 
     import pprint
 
-    print(f"0. runtime duration: {alns.stats.get_runtime_duration()}")
-    # pprint.pprint(alns.stats.best_solution_tracking)
-    # print("1. repair weight progression")
-    # for op in range(len(alns.stats.repair_operators_weights)):
-    #     weights = alns.stats.repair_operators_weights[op]
-    #     formatted_weights = [f"{w:.2f}" for w in weights]
-    #     print(f"{alns._repair_op_list[op][0]}:\n {formatted_weights}\n")
+    for result in results:
+        pprint.pprint(
+            f"Solution Value: {result["ObjValue"]} | TtB: (Time: {result["TimeToBest"][2]:.2f} Iteration: {result["TimeToBest"][1]:.0f} | RunTime: {result["Runtime"]:.2f}"
+        )
 
-    # print("1.1 repair CALLS progression")
-    # for op in range(len(alns.stats.repair_operators_calls)):
-    #     calls = alns.stats.repair_operators_calls[op]
-    #     percent_calls = [f"{(c/50):.2f}" for c in calls]
-    #     print(f"{alns._repair_op_list[op][0]}:\n {percent_calls}\n")
+    best = min(solution_sizes)
+    avg = np.mean(solution_sizes)
+    std = np.std(solution_sizes)
 
-    # pprint.pprint(alns.stats.repair_operators_weights)
-    # print("2. destroy weight progression")
-    # for op in range(len(alns.stats.destroy_operators_weights)):
-    #     weights = alns.stats.destroy_operators_weights[op]
-    #     formatted_weights = [f"{w:.2f}" for w in weights]
-    #     print(f"{alns._destroy_op_list[op][0]}:\n {formatted_weights}\n")
+    avg_time = np.mean(runtime)
+    avg_time_ttb = np.mean(ttb_time)
+    avg_iteration_ttb = np.mean(ttb_iteration)
 
-    print("3. Tracking Best Solution\n")
-    pprint.pprint(alns.stats.best_solution_tracking)
-
-    print("\n4. Last Best Solution")
-    print(alns.stats.get_last_time_to_best())
-    print(f"Instance: {INSTANCE_PATH} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}")
+    filename = INSTANCE_PATH.split("/")[-1]
+    CITY_NAME = filename.split(".")[0]
+    print(
+        f"\n === MEANS === \nInstance: {CITY_NAME} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}\nAvg_Time: {avg_time:.2f} | Avg_Time_To_Bet: {avg_time_ttb:.2f} | Avg_Time_To_Best_IT: {avg_iteration_ttb:.0f}"
+    )

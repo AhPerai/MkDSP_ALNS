@@ -111,30 +111,28 @@ class LNS:
                 best_S, curr_S, new_S
             )
             self._events.on_outcome(outcome, new_S, self.repair_operator.name)
-            print(f"new solution value: {len(new_S.S)} outcome:{outcome}")
 
         self._events.trigger(Event.ON_END)
         return best_S
 
 
-if __name__ == "__main__":
-    from algorithms.alns.operators.repair_operators.greedy_least_dom import (
-        GreedyLeastDominatedOperator,
-    )
-    from algorithms.alns.acept_criterion.simulated_annealing import SimulatedAnnealing
+from algorithms.alns.operators.repair_operators.greedy_least_dom import (
+    GreedyLeastDominatedOperator,
+)
+from algorithms.alns.acept_criterion.simulated_annealing import SimulatedAnnealing
 
+
+def run_LNS(K, path):
     #  fixed variables
-    K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
-    SEED = 5432
-    GREEDY_ALPHA = 0.3
+    GREEDY_ALPHA = 0.1
     DESTROY_FACTOR = 0.5
-    rng = np.random.default_rng(SEED)
+    ITERATION = 2000
+    rng = np.random.default_rng()
 
     # stop condition
-    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, 1000)
+    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, ITERATION)
     # acceptance criterion
-    simulated_annealing = SimulatedAnnealing(10, 2, 0.95, rng)
+    simulated_annealing = SimulatedAnnealing(10, 1, 0.99, rng)
 
     # initializing LNS
     lns = LNS(
@@ -149,24 +147,47 @@ if __name__ == "__main__":
     # destroy
     lns.destroy_operator = RandomDestroy(DESTROY_FACTOR, rng)
 
-    results = []
-    # for _ in range(10):
-    # alns.randomize_rng()
-
-    initial_S = SolutionState(INSTANCE_PATH, K)
+    initial_S = SolutionState(path, K)
     best_solution = lns.execute(initial_S)
-    results.append(len(best_solution.S))
+    return {
+        "ObjValue": len(best_solution.S),
+        "TimeToBest": lns.stats.get_last_time_to_best(),
+        "Runtime": lns.stats.get_runtime_duration(),
+    }
 
-    best = min(results)
-    avg = np.mean(results)
-    std = np.std(results)
+
+if __name__ == "__main__":
+    K = 2
+    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
+
+    results = []
+    for _ in range(5):
+        stats = run_LNS(K, INSTANCE_PATH)
+        results.append(stats)
+
+    print("\n === RESULTS ===")
+    solution_sizes = [res["ObjValue"] for res in results]
+    ttb_time = [res["TimeToBest"][2] for res in results]
+    ttb_iteration = [res["TimeToBest"][1] for res in results]
+    runtime = [res["Runtime"] for res in results]
+
     import pprint
 
-    print(f"0. runtime duration: {lns.stats.get_runtime_duration()}")
+    for result in results:
+        pprint.pprint(
+            f"Solution Value: {result["ObjValue"]} | TtB: (Time: {result["TimeToBest"][2]:.2f} | Iteration: {result["TimeToBest"][1]:.0f}) | RunTime: {result["Runtime"]:.2f}"
+        )
 
-    print("3. Tracking Best Solution\n")
-    pprint.pprint(lns.stats.best_solution_tracking)
+    best = min(solution_sizes)
+    avg = np.mean(solution_sizes)
+    std = np.std(solution_sizes)
 
-    print("\n4. Last Best Solution")
-    print(lns.stats.get_last_time_to_best())
-    print(f"Instance: {INSTANCE_PATH} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}")
+    avg_time = np.mean(runtime)
+    avg_time_ttb = np.mean(ttb_time)
+    avg_iteration_ttb = np.mean(ttb_iteration)
+
+    filename = INSTANCE_PATH.split("/")[-1]
+    CITY_NAME = filename.split(".")[0]
+    print(
+        f"\n === MEANS === \nInstance: {CITY_NAME} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}\nAvg_Time: {avg_time:.2f} | Avg_Time_To_Bet: {avg_time_ttb:.2f} | Avg_Time_To_Best_IT: {avg_iteration_ttb:.0f}"
+    )
