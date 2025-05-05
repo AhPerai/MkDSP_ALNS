@@ -234,13 +234,10 @@ def run_ALNS(K, path):
     }
 
 
-if __name__ == "__main__":
-    K = 2
-    INSTANCE_PATH = "instances/cities_small_instances/leeds.txt"
-
+def run_for_instance(instance_path, K, i):
     results = []
-    for _ in range(5):
-        stats = run_ALNS(K, INSTANCE_PATH)
+    for _ in range(i):
+        stats = run_ALNS(K, instance_path)
         results.append(stats)
 
     print("\n === RESULTS ===")
@@ -269,3 +266,29 @@ if __name__ == "__main__":
     print(
         f"\n === MEANS === \nInstance: {CITY_NAME} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}\nAvg_Time: {avg_time:.2f} | Avg_Time_To_Bet: {avg_time_ttb:.2f} | Avg_Time_To_Best_IT: {avg_iteration_ttb:.0f}"
     )
+
+
+import os
+
+if __name__ == "__main__":
+    K = 2
+    INSTANCE_FOLDER = "instances/cities_small_instances"
+    NUM_RUNS = 5
+
+    results = {}
+
+    for filename in os.listdir(INSTANCE_FOLDER):
+        if filename.endswith(".txt"):
+            instance_path = os.path.join(INSTANCE_FOLDER, filename)
+            instance_results = []
+
+            for _ in range(NUM_RUNS):
+                stats = run_ALNS(K, instance_path)
+                instance_results.append(stats)
+
+            results[filename] = instance_results
+
+    for instance, runs in results.items():
+        print(f"\nResults for {instance}:")
+        for i, run in enumerate(runs, 1):
+            print(f"  Run {i}: {run}")
