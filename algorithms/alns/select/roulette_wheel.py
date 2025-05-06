@@ -13,6 +13,7 @@ class RouletteWheelSelect(SelectStrategy):
         num_repair_op: int,
         segment_lenght: int,
         reaction_factor: float,
+        outcome_rewards: List[int],
         rng: Generator = np.random.default_rng(),
     ):
         super().__init__(num_destroy_op, num_repair_op, rng)
@@ -27,6 +28,11 @@ class RouletteWheelSelect(SelectStrategy):
         self._repair_scores = np.zeros(num_repair_op)
         self._destroy_attempts = np.zeros(num_destroy_op)
         self._repair_attempts = np.zeros(num_repair_op)
+        self._rewards = outcome_rewards
+
+    @property
+    def rewards(self):
+        return self._rewards
 
     @property
     def repair_scores(self):
@@ -68,8 +74,8 @@ class RouletteWheelSelect(SelectStrategy):
         return (d_idx, r_idx)
 
     def update(self, destroy_idx: int, repair_idx: int, outcome: Outcome):
-        self._destroy_scores[destroy_idx] += outcome.reward
-        self._repair_scores[repair_idx] += outcome.reward
+        self._destroy_scores[destroy_idx] += self._rewards[outcome.id]
+        self._repair_scores[repair_idx] += self._rewards[outcome.id]
 
         self._iteration += 1
 

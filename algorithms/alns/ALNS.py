@@ -173,12 +173,17 @@ from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (
 from algorithms.alns.operators.repair_operators.random_repair import RandomRepair
 from algorithms.alns.operators.destroy_operators.random_destroy import RandomDestroy
 
+import os
+import pprint
+
 
 def run_ALNS(K, path):
     #  fixed variables
-    GREEDY_ALPHA = 0.1
+    GREEDY_ALPHA = 0.15
     DESTROY_FACTOR = 0.5
-    ITERATION = 10
+    ITERATION = 10000
+    # BEST, NEW_BETTER, BETTER, ACCEPTED, NEW_ACCEPTED, REJECTED
+    OUTCOME_REWARDS = [33, 0, 16, 0, 9, 0]
     rng = np.random.default_rng()
 
     # operators
@@ -201,12 +206,21 @@ def run_ALNS(K, path):
     ]
 
     # stop condition
-    stop_by_iterations = StopCondition(Interrupt.BY_ITERATION_LIMIT, ITERATION)
+    stop_by_iterations = StopCondition(
+        method=Interrupt.BY_ITERATION_LIMIT, limit=ITERATION
+    )
     # acceptance criterion
-    simulated_annealing = SimulatedAnnealing(10, 1, 0.99, rng)
+    simulated_annealing = SimulatedAnnealing(
+        initial_temperature=50, final_temperature=1, cooling_rate=0.999, rng=rng
+    )
     # select strategy
     seg_roulette_wheel = RouletteWheelSelect(
-        len(d_op_list), len(r_op_list), 50, 0.5, rng
+        num_destroy_op=len(d_op_list),
+        num_repair_op=len(r_op_list),
+        segment_lenght=100,
+        reaction_factor=0.5,
+        outcome_rewards=OUTCOME_REWARDS,
+        rng=rng,
     )
 
     # initializing ALNS
@@ -227,6 +241,11 @@ def run_ALNS(K, path):
 
     initial_S = SolutionState(path, K)
     best_solution = alns.execute(initial_S)
+
+    # print(len(best_solution.S))
+    # pprint.pprint(alns.stats.best_solution_tracking)
+    # print(alns.stats.get_runtime_duration())
+    # # pprint.pprint(alns.stats.repair_operators_weights)
     return {
         "ObjValue": len(best_solution.S),
         "TimeToBest": alns.stats.get_last_time_to_best(),
@@ -234,42 +253,8 @@ def run_ALNS(K, path):
     }
 
 
-def run_for_instance(instance_path, K, i):
-    results = []
-    for _ in range(i):
-        stats = run_ALNS(K, instance_path)
-        results.append(stats)
-
-    print("\n === RESULTS ===")
-    solution_sizes = [res["ObjValue"] for res in results]
-    ttb_time = [res["TimeToBest"][2] for res in results]
-    ttb_iteration = [res["TimeToBest"][1] for res in results]
-    runtime = [res["Runtime"] for res in results]
-
-    import pprint
-
-    for result in results:
-        pprint.pprint(
-            f"Solution Value: {result["ObjValue"]} | TtB: (Time: {result["TimeToBest"][2]:.2f} Iteration: {result["TimeToBest"][1]:.0f} | RunTime: {result["Runtime"]:.2f}"
-        )
-
-    best = min(solution_sizes)
-    avg = np.mean(solution_sizes)
-    std = np.std(solution_sizes)
-
-    avg_time = np.mean(runtime)
-    avg_time_ttb = np.mean(ttb_time)
-    avg_iteration_ttb = np.mean(ttb_iteration)
-
-    filename = INSTANCE_PATH.split("/")[-1]
-    CITY_NAME = filename.split(".")[0]
-    print(
-        f"\n === MEANS === \nInstance: {CITY_NAME} | Best: {best} | Avg: {avg:.2f} | Std: {std:.2f}\nAvg_Time: {avg_time:.2f} | Avg_Time_To_Bet: {avg_time_ttb:.2f} | Avg_Time_To_Best_IT: {avg_iteration_ttb:.0f}"
-    )
-
-
-import os
-
+# if __name__ == "__main__":
+#     run_ALNS(2, "instances/cities_small_instances/cardiff.txt")
 if __name__ == "__main__":
     K = 2
     INSTANCE_FOLDER = "instances/cities_small_instances"
@@ -285,10 +270,35 @@ if __name__ == "__main__":
             for _ in range(NUM_RUNS):
                 stats = run_ALNS(K, instance_path)
                 instance_results.append(stats)
+                print(f"finished:{filename}")
 
             results[filename] = instance_results
 
     for instance, runs in results.items():
-        print(f"\nResults for {instance}:")
-        for i, run in enumerate(runs, 1):
-            print(f"  Run {i}: {run}")
+        print(f"\n======== {instance} ========")
+        solution_values = []
+        ttb_time = []
+        ttb_iteration = []
+        runtime = []
+
+        print(f"\n--- Results for each Run of {instance} ---")
+        for i, result in enumerate(runs, 1):
+            pprint.pprint(
+                f"Run {i}: Solution Value: {result["ObjValue"]} | TtB: (Time: {result["TimeToBest"][2]:.2f} Iteration: {result["TimeToBest"][1]:.0f} | RunTime: {result["Runtime"]:.2f}"
+            )
+            solution_values.append(result["ObjValue"])
+            runtime.append(result["Runtime"])
+            ttb_iteration.append(result["TimeToBest"][1])
+            ttb_time.append(result["TimeToBest"][2])
+
+        best = min(solution_values)
+        avg = np.mean(solution_values)
+        std = np.std(solution_values)
+
+        avg_time = np.mean(runtime)
+        avg_time_to_best = np.mean(ttb_time)
+        avg_iteration_to_best = np.mean(ttb_iteration)
+        print(f"\n--- Average Results for {instance} ---")
+        print(
+            f"\nBest: {best} | Avg: {avg:.2f} | Std: {std:.2f} | Avg_Time: {avg_time:.2f} | Avg_Time_To_Bet: {avg_time_to_best:.2f} | Avg_Time_To_Best_IT: {avg_iteration_to_best:.0f}"
+        )
