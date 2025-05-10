@@ -48,7 +48,8 @@ class Statistics:
         self.track_time_to_best()
 
     def add_ALNS_data_trackers(self):
-        self.add_basic_data_tracker()
+        self.track_finishing_time()
+        self.track_time_to_best()
         self.track_operators_performance()
 
     def track_finishing_time(self):

@@ -109,7 +109,7 @@ class ALNS:
 
         if self._track_stats:
             self._stats = Statistics(self)
-            self.stats.add_ALNS_data_trackers()
+            self.stats.add_basic_data_tracker()
 
     def validate(self):
         if self.n_destroy_operators == 0 or self.n_repair_operators == 0:
@@ -181,7 +181,7 @@ def run_ALNS(K, path):
     #  fixed variables
     GREEDY_ALPHA = 0.15
     DESTROY_FACTOR = 0.5
-    ITERATION = 10000
+    ITERATION = 5000
     # BEST, NEW_BETTER, BETTER, ACCEPTED, NEW_ACCEPTED, REJECTED
     OUTCOME_REWARDS = [33, 0, 16, 0, 9, 0]
     rng = np.random.default_rng()
@@ -211,7 +211,7 @@ def run_ALNS(K, path):
     )
     # acceptance criterion
     simulated_annealing = SimulatedAnnealing(
-        initial_temperature=50, final_temperature=1, cooling_rate=0.999, rng=rng
+        initial_temperature=25, final_temperature=1, cooling_rate=0.998, rng=rng
     )
     # select strategy
     seg_roulette_wheel = RouletteWheelSelect(
@@ -242,27 +242,51 @@ def run_ALNS(K, path):
     initial_S = SolutionState(path, K)
     best_solution = alns.execute(initial_S)
 
-    # print(len(best_solution.S))
-    # pprint.pprint(alns.stats.best_solution_tracking)
-    # print(alns.stats.get_runtime_duration())
-    # # pprint.pprint(alns.stats.repair_operators_weights)
+    TimeToBest = alns.stats.get_last_time_to_best()
+    Runtime = alns.stats.get_runtime_duration()
+    alns.events.unregister_all()
+    alns._stats = None
     return {
         "ObjValue": len(best_solution.S),
-        "TimeToBest": alns.stats.get_last_time_to_best(),
-        "Runtime": alns.stats.get_runtime_duration(),
+        "TimeToBest": TimeToBest,
+        "Runtime": Runtime,
     }
 
 
 # if __name__ == "__main__":
 #     run_ALNS(2, "instances/cities_small_instances/cardiff.txt")
+import objgraph
+
 if __name__ == "__main__":
     K = 2
     INSTANCE_FOLDER = "instances/cities_small_instances"
     NUM_RUNS = 5
+    cities_1 = [
+        "bath.txt",
+        "belfast.txt",
+        "brighton.txt",
+        "bristol.txt",
+        "cardiff.txt",
+        "coventry.txt",
+        "exeter.txt",
+        "glasgow.txt",
+        "leeds.txt",
+        "leicester.txt",
+        "liverpool.txt",
+        "manchester.txt",
+        "newcastle.txt",
+        "nottingham.txt",
+        "oxford.txt",
+        "plymouth.txt",
+        "sheffield.txt",
+        "southampton.txt",
+        "sunderland.txt",
+        "york.txt",
+    ]
 
     results = {}
 
-    for filename in os.listdir(INSTANCE_FOLDER):
+    for filename in cities_1:
         if filename.endswith(".txt"):
             instance_path = os.path.join(INSTANCE_FOLDER, filename)
             instance_results = []
@@ -270,7 +294,9 @@ if __name__ == "__main__":
             for _ in range(NUM_RUNS):
                 stats = run_ALNS(K, instance_path)
                 instance_results.append(stats)
-                print(f"finished:{filename}")
+                print(
+                    f"finished:{filename} result:{stats["ObjValue"]}, duration: {stats["Runtime"]}"
+                )
 
             results[filename] = instance_results
 

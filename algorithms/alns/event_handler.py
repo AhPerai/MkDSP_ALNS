@@ -67,3 +67,6 @@ class EventHandler:
         event = Event.get_event_by_outcome(outcome)
         if event:
             self.trigger(event, solution, operator_name)
+
+    def unregister_all(self):
+        self._listeners.clear()
