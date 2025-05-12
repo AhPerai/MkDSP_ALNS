@@ -1,5 +1,6 @@
 from enum import Enum
 import time
+from algorithms.reset import Resettable
 
 
 class Interrupt(Enum):
@@ -9,7 +10,7 @@ class Interrupt(Enum):
     BY_ITERATION_LIMIT_NO_IMPROVEMENT = 4
 
 
-class StopCondition:
+class StopCondition(Resettable):
     def __init__(self, method: Interrupt, limit: int):
         if method == None:
             raise ValueError("The stop method condition must be informed")
@@ -59,3 +60,10 @@ class StopCondition:
 
     def _max_iteration_no_improvement(self) -> bool:
         return False
+
+    def reset(self, rng=None):
+        """
+        Resets starting_time and iteration for a new execution
+        """
+        self._starting_time = None
+        self._curr_iteration = 0

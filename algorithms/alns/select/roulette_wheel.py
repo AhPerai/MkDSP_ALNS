@@ -100,6 +100,22 @@ class RouletteWheelSelect(SelectStrategy):
                 )
 
     def _reset_operators(self):
+        """
+        Resets operators data for a new segment
+        """
+        self._destroy_attempts.fill(0)
+        self._repair_attempts.fill(0)
+        self._destroy_scores.fill(0)
+        self._repair_scores.fill(0)
+        self._iteration = 0
+
+    def reset(self, rng=None):
+        """
+        Resets the component to its initial state for a fresh new execution
+        """
+        self._rng = rng
+        self._destroy_op_weights = np.ones(self._num_destroy_op)
+        self._repair_op_weights = np.ones(self._num_repair_op)
         self._destroy_attempts.fill(0)
         self._repair_attempts.fill(0)
         self._destroy_scores.fill(0)

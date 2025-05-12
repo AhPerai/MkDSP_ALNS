@@ -58,18 +58,18 @@ def debug_state_difference(
     )
 
 
-def find_rng_matching_expected_uniform_value(
-    lower_percent=0, upper_percent=1, iterations=100
-):
-    print(
-        f"\n-- Trying to find percentual value in between {lower_percent} and {upper_percent} in {iterations} iterations --\n"
-    )
+def find_rng_matching_expected_uniform_value(percentages_list, iterations=10):
     seed_list = []
     for _ in range(iterations):
         rng = random.default_rng(_)
-        random_percent = rng.uniform(0, 1)
-        if lower_percent <= random_percent <= upper_percent:
-            print(f"seed:{_}, percetual: {random_percent}")
+        count = 0
+        for i in range(3):
+            random_percent = rng.uniform(0, 1)
+            if percentages_list[i][0] <= random_percent <= percentages_list[i][1]:
+                count += 1
+
+        if count == 3:
+            print(f"seed:{_}")
             seed_list.append(_)
     return seed_list
 
@@ -88,8 +88,4 @@ def find_choice_seed_for_index(index_to_match, num_operators=4, tries=100):
 
 
 if __name__ == "__main__":
-    print("Searching for seeds that produce each index from 0 to 3")
-    for i in range(4):
-        seeds = list(find_choice_seed_for_index(i))
-        if seeds:
-            print(f"Index {i} → Seed(s): {seeds[:3]}")  # just show first few
+    find_rng_matching_expected_uniform_value([(0, 0.6), (0.37, 1), (0, 0.6)])

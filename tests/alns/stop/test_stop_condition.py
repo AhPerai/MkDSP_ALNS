@@ -47,6 +47,7 @@ import time
 @pytest.mark.parametrize("time_limit", [1, 0.10, 0.05])
 def test_dont_stop_before_time_limit(time_limit):
     condition = StopCondition(Interrupt.BY_TIMEOUT, time_limit)
+    condition.init_time()
 
     for _ in range(100):
         assert_(not condition.stop())
@@ -54,7 +55,27 @@ def test_dont_stop_before_time_limit(time_limit):
 
 def test_stop_after_time_limit():
     condition = StopCondition(Interrupt.BY_TIMEOUT, 1)
+    condition.init_time()
     time.sleep(1.05)
 
     for _ in range(100):
         assert_(condition.stop())
+
+
+def test_stop_values_after_reset():
+    condition = StopCondition(Interrupt.BY_ITERATION_LIMIT, ITERATION)
+    condition.init_time()
+
+    for _ in range(ITERATION):
+        assert not condition.stop()
+
+    for _ in range(ITERATION):
+        assert_(condition.stop())
+
+    condition.reset()
+    assert_(condition._starting_time == None)
+    assert_(condition._curr_iteration == 0)
+    condition.init_time()
+
+    for _ in range(ITERATION):
+        assert not condition.stop()

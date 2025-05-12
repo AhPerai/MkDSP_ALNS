@@ -2,7 +2,6 @@ from typing import Dict, Tuple
 from enum import Enum
 
 import numpy as np
-import random
 
 from algorithms.solution_state import SolutionState, Index
 from algorithms.alns.acept_criterion.accept_strategy import AcceptStrategy
@@ -12,6 +11,7 @@ from algorithms.alns.operators.operator_strategy import OperatorStrategy
 
 from algorithms.alns.event_handler import Event, EventHandler
 from algorithms.alns.statistics import Statistics
+from algorithms.reset import Resettable
 
 
 class OperatorType(Enum):
@@ -19,7 +19,7 @@ class OperatorType(Enum):
     REPAIR = 2
 
 
-class ALNS:
+class ALNS(Resettable):
 
     def __init__(
         self,
@@ -50,24 +50,32 @@ class ALNS:
         self._repair_op_list: Tuple[OperatorStrategy]
 
     @property
-    def events(self):
+    def events(self) -> EventHandler:
         return self._events
 
     @property
-    def stats(self):
+    def stats(self) -> Statistics:
         return self._stats
 
     @property
-    def stop(self):
+    def stop(self) -> StopCondition:
         return self._stop
 
     @property
-    def select(self):
+    def accept(self) -> AcceptStrategy:
+        return self._accept
+
+    @property
+    def select(self) -> SelectStrategy:
         return self._select
 
     @property
-    def operators(self):
+    def operators(self) -> Dict[OperatorType, Dict[str, OperatorStrategy]]:
         return self._operators
+
+    @property
+    def rng(self) -> np.random.Generator:
+        return self._rng
 
     @property
     def n_repair_operators(self):
@@ -94,14 +102,14 @@ class ALNS:
         self._stop.init_time()
         self._init_operators_list()
 
-        operators_list = list(self._destroy_op_list + self._repair_op_list)
-        for op_name, operator in operators_list:
+        for op_name, operator in list(self._destroy_op_list + self._repair_op_list):
             initial_S.add_info_index(operator.info_indexes)
 
         initial_S.init_G_info()
 
         initial_repair_operator = RandomRepair(self._rng)
         initial_repair_operator.operate(initial_S)
+
         # quick bug fix
         if Index.DEGREE in initial_S.info_indexes:
             for node in initial_S.G.nodes():
@@ -109,7 +117,7 @@ class ALNS:
 
         if self._track_stats:
             self._stats = Statistics(self)
-            self.stats.add_basic_data_tracker()
+            self.stats.add_ALNS_data_trackers()
 
     def validate(self):
         if self.n_destroy_operators == 0 or self.n_repair_operators == 0:
@@ -123,7 +131,6 @@ class ALNS:
         best_S = initial_S.copy()
 
         while not self._stop.stop():
-            # print(self.stop.iteration)
             destroy_idx, repair_idx = self._select.select()
 
             d_name, d_operator = self._destroy_op_list[destroy_idx]
@@ -146,9 +153,28 @@ class ALNS:
             self._events.trigger(
                 Event.ON_SELECT_UPDATE, destroy_idx, repair_idx, outcome
             )
+            self._accept.update_values()
 
         self._events.trigger(Event.ON_END)
         return best_S
+
+    def restart_components(self):
+        """
+        Resets all the components of ALNS once all the operators weights' hit 0
+        hopefully searching in new neighboorhoods
+        """
+        pass
+
+    def reset(self, rng=None):
+        """
+        Resets all the components of ALNS to have a fresh start at a new execution
+        """
+        self.rng = rng
+        self.stop.reset()
+        self.select.reset(rng)
+        self.accept.reset(rng)
+        self.events.unregister_all()
+        self.stats = None  # making sure cyclical reference doesnt hold on to memory
 
 
 # For test purposes

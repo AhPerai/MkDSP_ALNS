@@ -1,13 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Tuple
 from algorithms.alns.outcome import Outcome
 from algorithms.solution_state import SolutionState
+from algorithms.reset import Resettable
 
 
-class AcceptStrategy(ABC):
+class AcceptStrategy(Resettable):
 
+    @abstractmethod
     def _accept(self, curr_S: int, new_S: int) -> bool:
-        return False
+        return NotImplemented
 
     def update_values(self) -> None:
         pass
@@ -30,3 +32,8 @@ class AcceptStrategy(ABC):
             return (best_S, new_S.copy(), Outcome.ACCEPTED)
 
         return (best_S, curr_S, Outcome.REJECTED)
+
+    @abstractmethod
+    def reset(self, rng=None):
+        """Resets the acceptance strategy (abstract)"""
+        pass

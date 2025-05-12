@@ -1,11 +1,12 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Tuple, List
 import numpy as np
 from numpy.random import Generator
 from algorithms.alns.outcome import Outcome
+from algorithms.reset import Resettable
 
 
-class SelectStrategy(ABC):
+class SelectStrategy(Resettable):
 
     def __init__(self, num_destroy_op: int, num_repair_op: int, rng: Generator):
         self._num_destroy_op = num_destroy_op
@@ -44,3 +45,7 @@ class SelectStrategy(ABC):
     @abstractmethod
     def update(self, destroy_idx: int, repair_idx: int, outcome: Outcome) -> None:
         return NotImplemented
+
+    @abstractmethod
+    def reset(self, rng=None):
+        return super().reset(rng)
