@@ -4,7 +4,7 @@ from typing import List, Tuple, TYPE_CHECKING
 import time
 
 if TYPE_CHECKING:
-    from algorithms.alns.ALNS import ALNS
+    from algorithms.alns.alns import ALNS
 
 
 class Statistics:

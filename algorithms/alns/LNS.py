@@ -35,16 +35,24 @@ class LNS:
         self._repair_operator: OperatorStrategy = None
 
     @property
-    def events(self):
+    def events(self) -> EventHandler:
         return self._events
 
     @property
-    def stats(self):
+    def stats(self) -> Statistics:
         return self._stats
 
     @property
-    def stop(self):
+    def stop(self) -> StopCondition:
         return self._stop
+
+    @property
+    def accept(self) -> AcceptStrategy:
+        return self._accept
+
+    @property
+    def rng(self) -> np.random.Generator:
+        return self._rng
 
     @property
     def repair_operator(self):
@@ -114,6 +122,16 @@ class LNS:
 
         self._events.trigger(Event.ON_END)
         return best_S
+
+    def reset(self, rng=None):
+        """
+        Resets all the components of ALNS to have a fresh start at a new execution
+        """
+        self.rng = rng
+        self.stop.reset()
+        self.accept.reset(rng)
+        self.events.unregister_all()
+        self.stats = None  # making sure cyclical reference doesnt hold on to memory
 
 
 from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (

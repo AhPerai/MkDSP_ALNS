@@ -13,6 +13,8 @@ from algorithms.alns.event_handler import Event, EventHandler
 from algorithms.alns.statistics import Statistics
 from algorithms.reset import Resettable
 
+from algorithms.alns.operators.repair_operators.random_repair import RandomRepair
+
 
 class OperatorType(Enum):
     DESTROY = 1
@@ -70,12 +72,12 @@ class ALNS(Resettable):
         return self._select
 
     @property
-    def operators(self) -> Dict[OperatorType, Dict[str, OperatorStrategy]]:
-        return self._operators
-
-    @property
     def rng(self) -> np.random.Generator:
         return self._rng
+
+    @property
+    def operators(self) -> Dict[OperatorType, Dict[str, OperatorStrategy]]:
+        return self._operators
 
     @property
     def n_repair_operators(self):
@@ -165,192 +167,13 @@ class ALNS(Resettable):
         """
         pass
 
-    def reset(self, rng=None):
+    def reset(self, rng=np.random.default_rng()):
         """
         Resets all the components of ALNS to have a fresh start at a new execution
         """
-        self.rng = rng
+        self._rng = rng
         self.stop.reset()
         self.select.reset(rng)
         self.accept.reset(rng)
         self.events.unregister_all()
-        self.stats = None  # making sure cyclical reference doesnt hold on to memory
-
-
-# For test purposes
-from algorithms.alns.stop.stop_condition import Interrupt
-from algorithms.alns.select.roulette_wheel import RouletteWheelSelect
-from algorithms.alns.acept_criterion.simulated_annealing import SimulatedAnnealing
-import numpy as np
-
-
-from algorithms.alns.operators.repair_operators.greedy_degree import (
-    GreedyDegreeOperator,
-)
-from algorithms.alns.operators.repair_operators.greedy_least_dom import (
-    GreedyLeastDominatedOperator,
-)
-from algorithms.alns.operators.repair_operators.greedy_hybrid_dom import (
-    GreedyHybridDominatedOperator,
-)
-from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (
-    GreedyHybridDegreeOperator,
-)
-from algorithms.alns.operators.repair_operators.random_repair import RandomRepair
-from algorithms.alns.operators.destroy_operators.random_destroy import RandomDestroy
-
-import os
-import pprint
-
-
-def run_ALNS(K, path):
-    #  fixed variables
-    GREEDY_ALPHA = 0.15
-    DESTROY_FACTOR = 0.5
-    ITERATION = 5000
-    # BEST, NEW_BETTER, BETTER, ACCEPTED, NEW_ACCEPTED, REJECTED
-    OUTCOME_REWARDS = [33, 0, 16, 0, 9, 0]
-    rng = np.random.default_rng()
-
-    # operators
-    # repair
-    random_repair_op = RandomRepair(rng)
-    degree_repair_op = GreedyDegreeOperator(GREEDY_ALPHA)
-    least_dom_repair_op = GreedyLeastDominatedOperator(GREEDY_ALPHA)
-    hybrid_repair_op_v1 = GreedyHybridDominatedOperator(GREEDY_ALPHA)
-    hybrid_repair_op_v2 = GreedyHybridDegreeOperator(GREEDY_ALPHA)
-    # destroy
-    destroy_op = RandomDestroy(DESTROY_FACTOR, rng)
-
-    d_op_list = [destroy_op]
-    r_op_list = [
-        random_repair_op,
-        degree_repair_op,
-        least_dom_repair_op,
-        hybrid_repair_op_v1,
-        hybrid_repair_op_v2,
-    ]
-
-    # stop condition
-    stop_by_iterations = StopCondition(
-        method=Interrupt.BY_ITERATION_LIMIT, limit=ITERATION
-    )
-    # acceptance criterion
-    simulated_annealing = SimulatedAnnealing(
-        initial_temperature=25, final_temperature=1, cooling_rate=0.998, rng=rng
-    )
-    # select strategy
-    seg_roulette_wheel = RouletteWheelSelect(
-        num_destroy_op=len(d_op_list),
-        num_repair_op=len(r_op_list),
-        segment_lenght=100,
-        reaction_factor=0.5,
-        outcome_rewards=OUTCOME_REWARDS,
-        rng=rng,
-    )
-
-    # initializing ALNS
-    alns = ALNS(
-        stop=stop_by_iterations,
-        accept=simulated_annealing,
-        select=seg_roulette_wheel,
-        rng=rng,
-        track_stats=True,
-    )
-
-    # adding the operators
-    for d_operator in d_op_list:
-        alns.add_destroy_operator(d_operator)
-
-    for r_operator in r_op_list:
-        alns.add_repair_operator(r_operator)
-
-    initial_S = SolutionState(path, K)
-    best_solution = alns.execute(initial_S)
-
-    TimeToBest = alns.stats.get_last_time_to_best()
-    Runtime = alns.stats.get_runtime_duration()
-    alns.events.unregister_all()
-    alns._stats = None
-    return {
-        "ObjValue": len(best_solution.S),
-        "TimeToBest": TimeToBest,
-        "Runtime": Runtime,
-    }
-
-
-# if __name__ == "__main__":
-#     run_ALNS(2, "instances/cities_small_instances/cardiff.txt")
-import objgraph
-
-if __name__ == "__main__":
-    K = 2
-    INSTANCE_FOLDER = "instances/cities_small_instances"
-    NUM_RUNS = 5
-    cities_1 = [
-        "bath.txt",
-        "belfast.txt",
-        "brighton.txt",
-        "bristol.txt",
-        "cardiff.txt",
-        "coventry.txt",
-        "exeter.txt",
-        "glasgow.txt",
-        "leeds.txt",
-        "leicester.txt",
-        "liverpool.txt",
-        "manchester.txt",
-        "newcastle.txt",
-        "nottingham.txt",
-        "oxford.txt",
-        "plymouth.txt",
-        "sheffield.txt",
-        "southampton.txt",
-        "sunderland.txt",
-        "york.txt",
-    ]
-
-    results = {}
-
-    for filename in cities_1:
-        if filename.endswith(".txt"):
-            instance_path = os.path.join(INSTANCE_FOLDER, filename)
-            instance_results = []
-
-            for _ in range(NUM_RUNS):
-                stats = run_ALNS(K, instance_path)
-                instance_results.append(stats)
-                print(
-                    f"finished:{filename} result:{stats["ObjValue"]}, duration: {stats["Runtime"]}"
-                )
-
-            results[filename] = instance_results
-
-    for instance, runs in results.items():
-        print(f"\n======== {instance} ========")
-        solution_values = []
-        ttb_time = []
-        ttb_iteration = []
-        runtime = []
-
-        print(f"\n--- Results for each Run of {instance} ---")
-        for i, result in enumerate(runs, 1):
-            pprint.pprint(
-                f"Run {i}: Solution Value: {result["ObjValue"]} | TtB: (Time: {result["TimeToBest"][2]:.2f} Iteration: {result["TimeToBest"][1]:.0f} | RunTime: {result["Runtime"]:.2f}"
-            )
-            solution_values.append(result["ObjValue"])
-            runtime.append(result["Runtime"])
-            ttb_iteration.append(result["TimeToBest"][1])
-            ttb_time.append(result["TimeToBest"][2])
-
-        best = min(solution_values)
-        avg = np.mean(solution_values)
-        std = np.std(solution_values)
-
-        avg_time = np.mean(runtime)
-        avg_time_to_best = np.mean(ttb_time)
-        avg_iteration_to_best = np.mean(ttb_iteration)
-        print(f"\n--- Average Results for {instance} ---")
-        print(
-            f"\nBest: {best} | Avg: {avg:.2f} | Std: {std:.2f} | Avg_Time: {avg_time:.2f} | Avg_Time_To_Bet: {avg_time_to_best:.2f} | Avg_Time_To_Best_IT: {avg_iteration_to_best:.0f}"
-        )
+        self._stats = None  # making sure cyclical reference doesnt hold on to memory
