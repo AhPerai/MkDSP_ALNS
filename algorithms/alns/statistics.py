@@ -1,10 +1,11 @@
 from __future__ import annotations
 from algorithms.alns.event_handler import Event
-from typing import List, Tuple, TYPE_CHECKING
+from typing import List, Tuple, Dict, TYPE_CHECKING
 import time
 
 if TYPE_CHECKING:
     from algorithms.alns.alns import ALNS
+    from algorithms.alns.lns import LNS
 
 
 class Statistics:
@@ -100,3 +101,34 @@ class Statistics:
                 self.destroy_operators_weights[idx_op].append(
                     self.__alns.select.destroy_op_weights[idx_op]
                 )
+
+    def get_metrics(self) -> Dict:
+        if self.__alns.__class__.__name__ == ALNS.__name__:
+            return self.get_alns_metrics()
+
+        if self.__alns.__class__.__name__ == LNS.__name__:
+            self.get_alns_metrics()
+
+    def get_alns_metrics(self) -> Dict:
+        r_w_matrix = []
+        d_w_matrix = []
+
+        for idx_r_op in range(self.num_repair_op):
+            r_w_matrix.append(self.repair_operators_weights[idx_r_op])
+
+        for idx_d_op in range(self.num_destroy_op):
+            d_w_matrix.append(self.destroy_operators_weights[idx_d_op])
+
+        metrics = {
+            "best_solution_progression": self.best_solution_tracking,
+            "d_op_w_progression": d_w_matrix,
+            "r_op_w_progression": r_w_matrix,
+        }
+        return metrics
+
+    def get_lns_metrics(self) -> Dict:
+        metrics = {
+            "best_solution_progression": self.best_solution_tracking,
+        }
+
+        return metrics

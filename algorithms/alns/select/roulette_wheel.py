@@ -31,12 +31,16 @@ class RouletteWheelSelect(SelectStrategy):
         self._rewards = outcome_rewards
 
     @property
-    def rewards(self):
-        return self._rewards
+    def segment_lenght(self):
+        return self._segment_lenght
 
     @property
-    def repair_scores(self):
-        return self._repair_scores
+    def reaction_factor(self):
+        return self._reaction_factor
+
+    @property
+    def outcome_rewards(self):
+        return self._rewards
 
     @property
     def repair_scores(self):

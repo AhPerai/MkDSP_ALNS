@@ -9,7 +9,7 @@ from algorithms.heuristics.greedy_least_dom_v1 import (
 class GreedyLeastDominatedOperator(OperatorStrategy):
 
     def __init__(self, greedy_alpha: float):
-        super().__init__("least_dom_greedy")
+        super().__init__("least_dominated")
         if not (0 <= greedy_alpha <= 1):
             raise ValueError("Must be a float equal or between 0 and 1")
         self._alpha = greedy_alpha
