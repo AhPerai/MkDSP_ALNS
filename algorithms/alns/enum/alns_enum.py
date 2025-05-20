@@ -12,3 +12,8 @@ class Outcome(Enum):
     def __init__(self, id, label):
         self.id = id
         self.label = label
+
+
+class OperatorType(Enum):
+    DESTROY = 1
+    REPAIR = 2

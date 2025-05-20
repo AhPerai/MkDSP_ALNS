@@ -1,7 +1,7 @@
 import pytest
 from numpy.testing import assert_, assert_equal, assert_almost_equal
 from algorithms.alns.select.roulette_wheel import RouletteWheelSelect
-from algorithms.alns.outcome import Outcome
+from algorithms.alns.enum.alns_enum import Outcome
 import numpy as np
 
 

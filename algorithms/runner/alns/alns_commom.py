@@ -53,11 +53,11 @@ def get_config(configuration: List = None) -> Dict:
             "greedy_alpha": 0.15,
             "destroy_factor": 0.5,
             "method": "iteration",
-            "limit": 10,
+            "limit": 20,
             "initial_temperature": 25,
             "final_temperature": 1,
             "cooling_rate": 0.9975,
-            "segment_lenght": 100,
+            "segment_lenght": 5,
             "reaction_factor": 0.5,
             "outcome_rewards": [33, 0, 16, 0, 9, 0],
         }
@@ -70,21 +70,21 @@ def get_config(configuration: List = None) -> Dict:
         "hybrid_remaining_neighbors_least_dominated",
     ]
     config["destroy_operators"] = ["random"]
-    config["rng"] = np.random.default_rng()
 
     return config
 
 
 def setup_alns(config) -> ALNS:
+    rng = np.random.default_rng()
     # repair operators
-    random_repair_op = RandomRepair(config["rng"])
+    random_repair_op = RandomRepair(rng)
     degree_repair_op = GreedyDegreeOperator(config["greedy_alpha"])
     least_dom_repair_op = GreedyLeastDominatedOperator(config["greedy_alpha"])
     hybrid_repair_op_v1 = GreedyHybridDominatedOperator(config["greedy_alpha"])
     hybrid_repair_op_v2 = GreedyHybridDegreeOperator(config["greedy_alpha"])
 
     # destroy operators
-    destroy_op = RandomDestroy(config["destroy_factor"], config["rng"])
+    destroy_op = RandomDestroy(config["destroy_factor"], rng)
 
     d_op_list = [destroy_op]
     r_op_list = [
@@ -105,7 +105,7 @@ def setup_alns(config) -> ALNS:
         initial_temperature=config["initial_temperature"],
         final_temperature=config["final_temperature"],
         cooling_rate=config["cooling_rate"],
-        rng=config["rng"],
+        rng=rng,
     )
 
     # select strategy
@@ -115,7 +115,7 @@ def setup_alns(config) -> ALNS:
         segment_lenght=config["segment_lenght"],
         reaction_factor=config["reaction_factor"],
         outcome_rewards=config["outcome_rewards"],
-        rng=config["rng"],
+        rng=rng,
     )
 
     # initializing ALNS
@@ -123,7 +123,7 @@ def setup_alns(config) -> ALNS:
         stop=stop_by_iterations,
         accept=simulated_annealing,
         select=seg_roulette_wheel,
-        rng=config["rng"],
+        rng=rng,
         track_stats=True,
     )
 

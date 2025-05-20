@@ -1,6 +1,6 @@
 from enum import Enum
 import time
-from algorithms.reset import Resettable
+from algorithms.alns.reset import Resettable
 
 
 class Interrupt(Enum):

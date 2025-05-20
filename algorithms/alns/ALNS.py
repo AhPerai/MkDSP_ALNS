@@ -1,8 +1,8 @@
 from typing import Dict, Tuple
-from enum import Enum
 
 import numpy as np
 
+from algorithms.alns.enum.alns_enum import OperatorType
 from algorithms.solution_state import SolutionState, Index
 from algorithms.alns.acept_criterion.accept_strategy import AcceptStrategy
 from algorithms.alns.stop.stop_condition import StopCondition
@@ -11,14 +11,9 @@ from algorithms.alns.operators.operator_strategy import OperatorStrategy
 
 from algorithms.alns.event_handler import Event, EventHandler
 from algorithms.alns.statistics import Statistics
-from algorithms.reset import Resettable
+from algorithms.alns.reset import Resettable
 
 from algorithms.alns.operators.repair_operators.random_repair import RandomRepair
-
-
-class OperatorType(Enum):
-    DESTROY = 1
-    REPAIR = 2
 
 
 class ALNS(Resettable):

@@ -2,8 +2,8 @@ from abc import abstractmethod
 from typing import Tuple, List
 import numpy as np
 from numpy.random import Generator
-from algorithms.alns.outcome import Outcome
-from algorithms.reset import Resettable
+from algorithms.alns.enum.alns_enum import Outcome
+from algorithms.alns.reset import Resettable
 
 
 class SelectStrategy(Resettable):

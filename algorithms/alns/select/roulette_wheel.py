@@ -1,5 +1,5 @@
 from algorithms.alns.select.select_strategy import SelectStrategy
-from algorithms.alns.outcome import Outcome
+from algorithms.alns.enum.alns_enum import Outcome
 from typing import List, Tuple
 from numpy.random import Generator
 import numpy as np

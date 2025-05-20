@@ -1,7 +1,9 @@
 from __future__ import annotations
 from algorithms.alns.event_handler import Event
+from algorithms.alns.enum.alns_enum import OperatorType
 from typing import List, Tuple, Dict, TYPE_CHECKING
 import time
+import pprint
 
 if TYPE_CHECKING:
     from algorithms.alns.alns import ALNS
@@ -82,47 +84,65 @@ class Statistics:
         if self.__alns.select.is_update_time():
             for idx_op in range(self.num_repair_op):
                 self.repair_operators_calls[idx_op].append(
-                    self.__alns.select.repair_attempts[idx_op]
+                    int(self.__alns.select.repair_attempts[idx_op])
                 )
                 self.repair_operators_scores[idx_op].append(
-                    self.__alns.select.repair_scores[idx_op]
+                    float(self.__alns.select.repair_scores[idx_op])
                 )
                 self.repair_operators_weights[idx_op].append(
-                    self.__alns.select.repair_op_weights[idx_op]
+                    float(self.__alns.select.repair_op_weights[idx_op])
                 )
 
             for idx_op in range(self.num_destroy_op):
                 self.destroy_operators_calls[idx_op].append(
-                    self.__alns.select.destroy_attempts[idx_op]
+                    int(self.__alns.select.destroy_attempts[idx_op])
                 )
                 self.destroy_operators_scores[idx_op].append(
-                    self.__alns.select.destroy_scores[idx_op]
+                    float(self.__alns.select.destroy_scores[idx_op])
                 )
                 self.destroy_operators_weights[idx_op].append(
-                    self.__alns.select.destroy_op_weights[idx_op]
+                    float(self.__alns.select.destroy_op_weights[idx_op])
                 )
 
     def get_metrics(self) -> Dict:
-        if self.__alns.__class__.__name__ == ALNS.__name__:
+        if self.__alns.__class__.__name__ == "ALNS":
             return self.get_alns_metrics()
 
-        if self.__alns.__class__.__name__ == LNS.__name__:
+        if self.__alns.__class__.__name__ == "LNS":
             self.get_alns_metrics()
 
     def get_alns_metrics(self) -> Dict:
-        r_w_matrix = []
-        d_w_matrix = []
+        r_op_matrix = {
+            operator_name: []
+            for operator_name in self.__alns.operators[OperatorType.REPAIR]
+        }
+        d_op_matrix = {
+            operator_name: []
+            for operator_name in self.__alns.operators[OperatorType.DESTROY]
+        }
 
-        for idx_r_op in range(self.num_repair_op):
-            r_w_matrix.append(self.repair_operators_weights[idx_r_op])
+        for idx_d_op, op_name in enumerate(self.__alns.operators[OperatorType.DESTROY]):
+            d_op_matrix[op_name].append(
+                {
+                    "attempt": self.destroy_operators_calls[idx_d_op],
+                    "score": self.destroy_operators_scores[idx_d_op],
+                    "weight": self.destroy_operators_weights[idx_d_op],
+                }
+            )
 
-        for idx_d_op in range(self.num_destroy_op):
-            d_w_matrix.append(self.destroy_operators_weights[idx_d_op])
+        for idx_r_op, op_name in enumerate(self.__alns.operators[OperatorType.REPAIR]):
+            r_op_matrix[op_name].append(
+                {
+                    "attempt": self.repair_operators_calls[idx_r_op],
+                    "score": self.repair_operators_scores[idx_r_op],
+                    "weight": self.repair_operators_weights[idx_r_op],
+                }
+            )
 
         metrics = {
             "best_solution_progression": self.best_solution_tracking,
-            "d_op_w_progression": d_w_matrix,
-            "r_op_w_progression": r_w_matrix,
+            "d_op_progression": d_op_matrix,
+            "r_op_progression": r_op_matrix,
         }
         return metrics
 

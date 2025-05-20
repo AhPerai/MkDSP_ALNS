@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Dict, List, Callable
-from algorithms.alns.outcome import Outcome
+from algorithms.alns.enum.alns_enum import Outcome
 from algorithms.solution_state import SolutionState
 from algorithms.alns.operators.operator_strategy import OperatorStrategy
 

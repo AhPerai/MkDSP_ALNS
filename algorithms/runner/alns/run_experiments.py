@@ -2,13 +2,15 @@ import os
 import argparse
 import objgraph
 import algorithms.utils.metrics_logger as metrics_logger
-from algorithms.runner.alns.alns_commom import setup_alns
+from algorithms.runner.alns.alns_commom import setup_alns, get_config
+from algorithms.alns.alns import ALNS
 from algorithms.solution_state import SolutionState
 
 
 def run_alns_metrics(config, k, folder, runs):
-    metrics_folder = metrics_logger.create_folder(alns, folder, "all", k)
-    metrics_logger.add_config_file(metrics_folder)
+    algorithm_name = ALNS.__name__
+    metrics_folder = metrics_logger.create_folder(algorithm_name, folder, "all", k)
+    metrics_logger.add_config_file(config, folder=metrics_folder)
 
     results = {}
 
@@ -22,7 +24,7 @@ def run_alns_metrics(config, k, folder, runs):
         best_run_progression_metric = {}
 
         for _ in range(runs):
-            solution = alns.execute()
+            solution = alns.execute(initial_S)
             run_results = {
                 "objective_value": len(solution.S),
                 "runtime": alns.stats.get_runtime_duration(),
@@ -35,12 +37,16 @@ def run_alns_metrics(config, k, folder, runs):
 
             alns.reset()
 
-        metrics_logger.add_progression_log(folder, best_run_progression_metric)
+        metrics_logger.add_progression_log(
+            metrics_folder, filename, best_run_progression_metric
+        )
         row_data = metrics_logger.eval_instance_results(filename, instance_results)
-        metrics_logger.add_metrics(folder, row_data)
-        results[filename] = instance_results
+        metrics_logger.add_metrics(metrics_folder, row_data)
 
+
+import pprint
 
 if __name__ == "__main__":
-    config = None
-    run_alns_metrics(config, 2, "instances\cities_small_instances", 1)
+    config = get_config()
+    instances_path = os.path.join("instances", "cities_small_instances")
+    run_alns_metrics(config, 2, instances_path, 1)

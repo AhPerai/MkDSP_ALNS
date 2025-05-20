@@ -1,8 +1,8 @@
 from abc import abstractmethod
 from typing import Tuple
-from algorithms.alns.outcome import Outcome
+from algorithms.alns.enum.alns_enum import Outcome
 from algorithms.solution_state import SolutionState
-from algorithms.reset import Resettable
+from algorithms.alns.reset import Resettable
 
 
 class AcceptStrategy(Resettable):

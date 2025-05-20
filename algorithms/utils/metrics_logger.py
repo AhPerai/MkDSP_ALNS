@@ -4,6 +4,7 @@ from datetime import datetime
 import csv
 import json
 import os
+import pandas as pd
 
 
 def eval_instance_results(instance, results):
@@ -54,11 +55,10 @@ def get_filename(algo, instance, k):
     return filename
 
 
-def create_folder(metaheuristic, folder_path: str, instance: str, k: int) -> str:
-    algorithm_name = metaheuristic.__class__.__name__.upper()
+def create_folder(metaheuristic_name, folder_path: str, instance: str, k: int) -> str:
     instance_name = instance.split(".")[0]
-    instances_path = folder_path.split("/")[1]
-    base_path = f"algorithms\\results\\{algorithm_name}\\results"
+    instances_path_name = os.path.basename(folder_path)
+    base_path = f"algorithms\\runner\\{metaheuristic_name.lower()}\\metrics"
 
     # Get the last file_number adds 1 and pads with 0s
     folders = [
@@ -71,13 +71,13 @@ def create_folder(metaheuristic, folder_path: str, instance: str, k: int) -> str
         prefix = last_folder.split("_")[0]
         number_id = f"{int(prefix) + 1:03d}"
 
-    new_folder = f"{number_id}_{instances_path}_{instance_name}-K_{k}"
+    new_folder = f"{number_id}_{instances_path_name}_{instance_name}-K_{k}"
     full_path = f"{base_path}\\{new_folder}"
     os.makedirs(full_path, exist_ok=True)
     return full_path
 
 
-def add_config_file(config: dict, folder):
+def add_config_file(config: dict, folder: str):
     filepath = os.path.join(folder, "config.json")
 
     with open(filepath, "w") as file:
@@ -86,8 +86,60 @@ def add_config_file(config: dict, folder):
     return filepath
 
 
-def add_progression_log(folder, progression_metrics):
-    pass
+def add_progression_log(base_folder: str, instance_name: str, metrics: dict):
+    """
+    Writes an Excel file with two sheets:
+      1) Best-solution progression
+      2) Operator progression (destroy + repair) in wide format
+
+    Args:
+      base_folder: Path to instance-specific folder.
+      instance_name: Name of the instance (used in filename).
+      metrics: dict returned by get_alns_metrics().
+    """
+    progression_folder = os.path.join(base_folder, "progression")
+    os.makedirs(progression_folder, exist_ok=True)
+    # Prepare file path
+    file_path = os.path.join(progression_folder, f"{instance_name}_progression.xlsx")
+
+    # 1) Best-solution progression
+    best_prog = metrics["best_solution_progression"]
+    df_best = pd.DataFrame(
+        best_prog, columns=["SolutionSize", "Iteration", "TimeElapsed", "Operator"]
+    )
+
+    # 2) Operator progression
+    # Combine destroy and repair into one dict
+    op_progression = {}
+    op_progression.update(metrics["d_op_progression"])
+    op_progression.update(metrics["r_op_progression"])
+
+    # Build multi-index columns: (metric, update_idx)
+    records = {}
+    for op_name, lists in op_progression.items():
+        # lists is a list of one dict containing attempt, score, weight lists
+        data = lists[0]
+        steps = len(data["attempt"])
+        for metric in ("attempt", "score", "weight"):
+            for idx in range(steps):
+                col = (metric, idx)
+                records.setdefault(op_name, {})[col] = data[metric][idx]
+
+    # Create DataFrame
+    df_ops = pd.DataFrame.from_dict(records, orient="index")
+    # Sort columns by metric, then step
+    df_ops = df_ops.reindex(sorted(df_ops.columns, key=lambda x: (x[0], x[1])), axis=1)
+    df_ops.columns = pd.MultiIndex.from_tuples(
+        df_ops.columns, names=["Metric", "Update"]
+    )
+    df_ops.columns = df_ops.columns.swaplevel(0, 1)
+
+    # Write to Excel with two sheets
+    with pd.ExcelWriter(file_path, engine="openpyxl") as writer:
+        df_best.to_excel(writer, sheet_name="Best Progression", index=False)
+        df_ops.to_excel(writer, sheet_name="Operator Progression")
+
+    print(f"Progression log written to: {file_path}")
 
 
 def add_metrics(folder, data):
