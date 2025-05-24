@@ -57,13 +57,12 @@ def get_config(configuration: List = None) -> Dict:
     return config
 
 
-def setup_alns(config) -> ALNS:
+def setup_alns(config) -> LNS:
     rng = np.random.default_rng()
     # repair operators
-    random_repair_op = RandomRepair(rng)
-    degree_repair_op = GreedyDegreeOperator(config["greedy_alpha"])
+    destroy_op = OPERATOR_REGISTRY["destroy_operator"]()
+    repair_op = OPERATOR_REGISTRY["repair_operator"]()
     # destroy operators
-    destroy_op = RandomDestroy(config["destroy_factor"], rng)
 
     # stop condition
     stop_by_iterations = StopCondition(
@@ -79,18 +78,11 @@ def setup_alns(config) -> ALNS:
     )
 
     # initializing ALNS
-    alns = LNS(
+    lns = LNS(
         stop=stop_by_iterations,
         accept=simulated_annealing,
         rng=rng,
         track_stats=True,
     )
 
-    # adding the operators
-    for d_operator in d_op_list:
-        alns.add_destroy_operator(d_operator)
-
-    for r_operator in r_op_list:
-        alns.add_repair_operator(r_operator)
-
-    return alns
+    return lns

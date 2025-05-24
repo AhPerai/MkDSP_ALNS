@@ -4,14 +4,14 @@ from algorithms.solution_state import SolutionState, Index
 
 
 class OperatorStrategy(ABC):
+    name: str = None
 
-    def __init__(self, name: str):
-        self._name = name
+    def __init__(self):
         self._info_indexes: List[int] = [Index.K]
 
     @property
     def name(self) -> str:
-        return self._name
+        return self.__class__.name or self.__class__.__name__
 
     @property
     def info_indexes(self) -> List[int]:

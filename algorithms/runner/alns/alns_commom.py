@@ -63,13 +63,13 @@ def get_config(configuration: List = None) -> Dict:
         }
 
     config["repair_operators"] = [
-        "random_repair",
-        "remaining_neighbors",
-        "least_dominated",
-        "hybrid_least_dominated_remaining_neighbors",
-        "hybrid_remaining_neighbors_least_dominated",
+        RandomRepair.name,
+        GreedyDegreeOperator.name,
+        GreedyLeastDominatedOperator.name,
+        GreedyHybridDegreeOperator.name,
+        GreedyHybridDominatedOperator.name,
     ]
-    config["destroy_operators"] = ["random_destroy"]
+    config["destroy_operators"] = [RandomDestroy.name]
 
     return config
 

@@ -34,7 +34,7 @@ def run_lns_metrics(config, k, folder, runs):
                 best_run_value = run_results["objective_value"]
                 best_run_progression_metric = lns.stats.get_metrics()
 
-            alns.reset()
+            lns.reset()
 
         metrics_logger.add_metrics(
             metrics_folder, filename, best_run_progression_metric

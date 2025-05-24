@@ -4,9 +4,10 @@ from algorithms.heuristics.greedy_degree import pseudo_greedy_repair, greedy_rep
 
 
 class GreedyDegreeOperator(OperatorStrategy):
+    name = "remaining_neighbors_repair"
 
     def __init__(self, greedy_alpha: float):
-        super().__init__("remaining_neighbors")
+        super().__init__()
         if not (0 <= greedy_alpha <= 1):
             raise ValueError("Must be a float equal or between 0 and 1")
         self._alpha = greedy_alpha

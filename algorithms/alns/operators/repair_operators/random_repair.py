@@ -5,12 +5,13 @@ import numpy.random as random
 
 
 class RandomRepair(OperatorStrategy):
+    name = "random_repair"
 
     def __init__(
         self,
         rng: random.Generator = random.default_rng(),
     ):
-        super().__init__("random_repair")
+        super().__init__()
         self._rng = rng
 
     def _modify_solution(self, current_solution) -> SolutionState:

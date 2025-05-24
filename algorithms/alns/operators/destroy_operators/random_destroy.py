@@ -12,13 +12,14 @@ import math
 
 
 class RandomDestroy(OperatorStrategy):
+    name = "random_destroy"
 
     def __init__(
         self,
         destroy_factor: float,
         rng: random.Generator = random.default_rng(),
     ):
-        super().__init__("random_destroy")
+        super().__init__()
         if not (0 < destroy_factor < 1):
             raise ValueError("Destroy factor must be greater than 0 and lower than 1")
         self._destroy_factor = destroy_factor

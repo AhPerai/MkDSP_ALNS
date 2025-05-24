@@ -139,9 +139,6 @@ from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (
 )
 from algorithms.alns.acept_criterion.simulated_annealing import SimulatedAnnealing
 
-import pprint
-import os
-
 
 def run_LNS(K, path):
     #  fixed variables
@@ -180,10 +177,6 @@ def run_LNS(K, path):
         "TimeToBest": TimeToBest,
         "Runtime": Runtime,
     }
-
-
-# if __name__ == "__main__":
-#     run_LNS(2, "instances/cities_small_instances/cardiff.txt")
 
 
 if __name__ == "__main__":
