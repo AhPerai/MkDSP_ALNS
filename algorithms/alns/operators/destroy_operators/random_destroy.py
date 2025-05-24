@@ -18,7 +18,7 @@ class RandomDestroy(OperatorStrategy):
         destroy_factor: float,
         rng: random.Generator = random.default_rng(),
     ):
-        super().__init__("random")
+        super().__init__("random_destroy")
         if not (0 < destroy_factor < 1):
             raise ValueError("Destroy factor must be greater than 0 and lower than 1")
         self._destroy_factor = destroy_factor

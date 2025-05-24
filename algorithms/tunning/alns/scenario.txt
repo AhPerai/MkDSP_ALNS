@@ -1,0 +1,4 @@
+parameterFile = "./parameters-alns.txt"
+trainInstancesDir = "./instances-train"
+targetRunner = "./target-runner.py"
+maxExperiments = 2000

@@ -10,7 +10,7 @@ class RandomRepair(OperatorStrategy):
         self,
         rng: random.Generator = random.default_rng(),
     ):
-        super().__init__("random")
+        super().__init__("random_repair")
         self._rng = rng
 
     def _modify_solution(self, current_solution) -> SolutionState:

@@ -1,0 +1,16 @@
+# name                switch                   type   values
+greedy_alpha          "--greedy_alpha "        r      (0.0, 1.0)
+destroy_factor        "--destroy_factor "      r      (0.0, 1.0)
+initial_temperature   "--initial_temperature " r      (1, 100)
+final_temperature     "--final_temperature "   r      (0.1, 10)
+cooling_rate          "--cooling_rate "        r      (0.90, 0.9999)
+segment_length        "--segment_length "      i      (1, 5000)
+reaction_factor       "--reaction_factor "     r      (0.0, 1.0)
+
+# Rewards for outcomes
+reward_best           "--reward_best "         i      (0, 100)
+reward_new_better     "--reward_new_better "   i      (0, 0)
+reward_better         "--reward_better "       i      (0, 100)
+reward_new_accepted   "--reward_new_accepted " i      (0, 0)
+reward_accepted       "--reward_accepted "     i      (0, 100)
+reward_rejected       "--reward_rejected "     i      (0, 0)

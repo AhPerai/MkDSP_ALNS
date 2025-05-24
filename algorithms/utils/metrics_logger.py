@@ -1,5 +1,6 @@
 import pprint
 import numpy as np
+from typing import List
 from datetime import datetime
 import csv
 import json
@@ -55,10 +56,21 @@ def get_filename(algo, instance, k):
     return filename
 
 
-def create_folder(metaheuristic_name, folder_path: str, instance: str, k: int) -> str:
+def create_folder(
+    metaheuristic_name,
+    folder_path: str,
+    instance: str,
+    k: int,
+    destroy_op_name: str = None,
+    repair_op_name: str = None,
+) -> str:
+    operators = (destroy_op_name, repair_op_name)
     instance_name = instance.split(".")[0]
     instances_path_name = os.path.basename(folder_path)
     base_path = f"algorithms\\runner\\{metaheuristic_name.lower()}\\metrics"
+
+    if metaheuristic_name == "lns" and operators:
+        base_path = f"{base_path}\\{destroy_op_name}_{repair_op_name}"
 
     # Get the last file_number adds 1 and pads with 0s
     folders = [
@@ -88,14 +100,10 @@ def add_config_file(config: dict, folder: str):
 
 def add_progression_log(base_folder: str, instance_name: str, metrics: dict):
     """
+    Built for ALNS
     Writes an Excel file with two sheets:
       1) Best-solution progression
       2) Operator progression (destroy + repair) in wide format
-
-    Args:
-      base_folder: Path to instance-specific folder.
-      instance_name: Name of the instance (used in filename).
-      metrics: dict returned by get_alns_metrics().
     """
     progression_folder = os.path.join(base_folder, "progression")
     os.makedirs(progression_folder, exist_ok=True)
@@ -109,7 +117,6 @@ def add_progression_log(base_folder: str, instance_name: str, metrics: dict):
     )
 
     # 2) Operator progression
-    # Combine destroy and repair into one dict
     op_progression = {}
     op_progression.update(metrics["d_op_progression"])
     op_progression.update(metrics["r_op_progression"])
@@ -125,16 +132,20 @@ def add_progression_log(base_folder: str, instance_name: str, metrics: dict):
                 col = (metric, idx)
                 records.setdefault(op_name, {})[col] = data[metric][idx]
 
-    # Create DataFrame
     df_ops = pd.DataFrame.from_dict(records, orient="index")
     # Sort columns by metric, then step
-    df_ops = df_ops.reindex(sorted(df_ops.columns, key=lambda x: (x[0], x[1])), axis=1)
+    df_ops = df_ops.reindex(sorted(df_ops.columns, key=lambda x: (x[1], x[0])), axis=1)
     df_ops.columns = pd.MultiIndex.from_tuples(
         df_ops.columns, names=["Metric", "Update"]
     )
+
+    # Swap to have Update on top, Metric below
     df_ops.columns = df_ops.columns.swaplevel(0, 1)
 
-    # Write to Excel with two sheets
+    # Optional: sort columns by Update (outer level)
+    df_ops = df_ops.sort_index(axis=1, level=0)
+
+    # Write to Excel with two sheets: Best Progression and Operator Progression
     with pd.ExcelWriter(file_path, engine="openpyxl") as writer:
         df_best.to_excel(writer, sheet_name="Best Progression", index=False)
         df_ops.to_excel(writer, sheet_name="Operator Progression")
