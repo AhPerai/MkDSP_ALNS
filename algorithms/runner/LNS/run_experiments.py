@@ -2,14 +2,32 @@ import os
 import argparse
 import objgraph
 import algorithms.utils.metrics_logger as metrics_logger
-from algorithms.runner.lns.lns_commom import setup_alns, get_config
+from algorithms.runner.lns.lns_commom import setup_lns, get_config
 from algorithms.alns.lns import LNS
 from algorithms.solution_state import SolutionState
 
 
+from algorithms.alns.operators.repair_operators import (
+    GreedyDegreeOperator,
+    GreedyLeastDominatedOperator,
+    GreedyHybridDominatedOperator,
+    GreedyHybridDegreeOperator,
+    RandomRepair,
+)
+
+from algorithms.alns.operators.destroy_operators.random_destroy import RandomDestroy
+
+
 def run_lns_metrics(config, k, folder, runs):
     algorithm_name = LNS.__name__
-    metrics_folder = metrics_logger.create_folder(algorithm_name, folder, "all", k)
+    metrics_folder = metrics_logger.create_folder(
+        algorithm_name,
+        folder,
+        "all",
+        k,
+        config["destroy_operator"],
+        config["repair_operator"],
+    )
     metrics_logger.add_config_file(config, folder=metrics_folder)
 
     for filename in os.listdir(folder):
@@ -36,8 +54,8 @@ def run_lns_metrics(config, k, folder, runs):
 
             lns.reset()
 
-        metrics_logger.add_metrics(
-            metrics_folder, filename, best_run_progression_metric
+        metrics_logger.add_progression_log(
+            metrics_folder, filename, best_run_progression_metric, algorithm_name
         )
         row_data = metrics_logger.eval_instance_results(filename, instance_results)
         metrics_logger.add_metrics(metrics_folder, row_data)
@@ -46,13 +64,23 @@ def run_lns_metrics(config, k, folder, runs):
 import pprint
 
 if __name__ == "__main__":
-    config = get_config()
     instances_path = os.path.join("instances", "cities_small_instances")
-    K_values = [1, 2, 4]
+    K_values = [1, 2]
     repair_operators = [
-        "",
-        "",
+        RandomRepair.name,
+        GreedyDegreeOperator.name,
+        GreedyLeastDominatedOperator.name,
+        GreedyHybridDegreeOperator.name,
+        GreedyHybridDominatedOperator.name,
     ]
-    for K in K_values:
-        print(f"\n\nINITIALIZING FOR K ={K}\n\n")
-        run_lns_metrics(config, K, instances_path, 5)
+    destroy_operators = [RandomDestroy.name]
+
+    for destroy_operator_name in destroy_operators:
+        for repair_operator_name in repair_operators:
+            config = get_config(destroy_operator_name, repair_operator_name)
+            print(
+                f"\n\nOPERATORS:  DESTROY:{destroy_operator_name} REPAIR{repair_operator_name}\n\n"
+            )
+            for K in K_values:
+                print(f"\n\nINITIALIZING FOR K ={K}\n\n")
+                run_lns_metrics(config, K, instances_path, 3)

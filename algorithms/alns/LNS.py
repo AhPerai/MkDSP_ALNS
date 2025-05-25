@@ -123,15 +123,15 @@ class LNS:
         self._events.trigger(Event.ON_END)
         return best_S
 
-    def reset(self, rng=None):
+    def reset(self, rng=np.random.default_rng()):
         """
         Resets all the components of ALNS to have a fresh start at a new execution
         """
-        self.rng = rng
+        self._rng = rng
         self.stop.reset()
         self.accept.reset(rng)
         self.events.unregister_all()
-        self.stats = None  # making sure cyclical reference doesnt hold on to memory
+        self._stats = None  # making sure cyclical reference doesnt hold on to memory
 
 
 from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (
@@ -144,7 +144,7 @@ def run_LNS(K, path):
     #  fixed variables
     GREEDY_ALPHA = 0.25
     DESTROY_FACTOR = 0.5
-    ITERATION = 5000
+    ITERATION = 20
     rng = np.random.default_rng()
 
     # stop condition
@@ -180,74 +180,4 @@ def run_LNS(K, path):
 
 
 if __name__ == "__main__":
-    K = 2
-    INSTANCE_FOLDER = "instances/cities_small_instances"
-    NUM_RUNS = 3
-
-    cities_1 = [
-        "bath.txt",
-        "belfast.txt",
-        "brighton.txt",
-        "bristol.txt",
-        "cardiff.txt",
-        "coventry.txt",
-        "exeter.txt",
-        "glasgow.txt",
-        "leeds.txt",
-        "leicester.txt",
-        "liverpool.txt",
-        "manchester.txt",
-        "newcastle.txt",
-        "nottingham.txt",
-        "oxford.txt",
-        "plymouth.txt",
-        "sheffield.txt",
-        "southampton.txt",
-        "sunderland.txt",
-        "york.txt",
-    ]
-
-    results = {}
-
-    for filename in cities_1:
-        if filename.endswith(".txt"):
-            instance_path = os.path.join(INSTANCE_FOLDER, filename)
-            instance_results = []
-
-            for _ in range(NUM_RUNS):
-                stats = run_LNS(K, instance_path)
-                instance_results.append(stats)
-                print(
-                    f"finished:{filename} result:{stats["ObjValue"]}, duration: {stats["Runtime"]}"
-                )
-
-            results[filename] = instance_results
-
-    for instance, runs in results.items():
-        print(f"\n======== {instance} ========")
-        solution_values = []
-        ttb_time = []
-        ttb_iteration = []
-        runtime = []
-
-        print(f"\n--- Results for each Run of {instance} ---")
-        for i, result in enumerate(runs, 1):
-            pprint.pprint(
-                f"Run {i}: Solution Value: {result["ObjValue"]} | TtB: (Time: {result["TimeToBest"][2]:.2f} Iteration: {result["TimeToBest"][1]:.0f} | RunTime: {result["Runtime"]:.2f}"
-            )
-            solution_values.append(result["ObjValue"])
-            runtime.append(result["Runtime"])
-            ttb_iteration.append(result["TimeToBest"][1])
-            ttb_time.append(result["TimeToBest"][2])
-
-        best = min(solution_values)
-        avg = np.mean(solution_values)
-        std = np.std(solution_values)
-
-        avg_time = np.mean(runtime)
-        avg_time_to_best = np.mean(ttb_time)
-        avg_iteration_to_best = np.mean(ttb_iteration)
-        print(f"\n--- Average Results for {instance} ---")
-        print(
-            f"\nBest: {best} | Avg: {avg:.2f} | Std: {std:.2f} | Avg_Time: {avg_time:.2f} | Avg_Time_To_Bet: {avg_time_to_best:.2f} | Avg_Time_To_Best_IT: {avg_iteration_to_best:.0f}"
-        )
+    run_LNS(2, "instances\cities_small_instances\\belfast.txt")

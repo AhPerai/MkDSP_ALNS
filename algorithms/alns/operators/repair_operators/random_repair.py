@@ -1,4 +1,7 @@
-from algorithms.alns.operators.operator_strategy import OperatorStrategy
+from algorithms.alns.operators.operator_strategy import (
+    OperatorStrategy,
+    OperatorContext,
+)
 from algorithms.solution_state import SolutionState
 from algorithms.heuristics.random_domination import repair
 import numpy.random as random
@@ -13,6 +16,10 @@ class RandomRepair(OperatorStrategy):
     ):
         super().__init__()
         self._rng = rng
+
+    @classmethod
+    def get_instance_from_context(cls, context: OperatorContext):
+        return cls(context.rng)
 
     def _modify_solution(self, current_solution) -> SolutionState:
         return repair(current_solution, self._rng)

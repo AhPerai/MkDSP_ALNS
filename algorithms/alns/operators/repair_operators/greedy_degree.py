@@ -1,6 +1,9 @@
-from algorithms.alns.operators.operator_strategy import OperatorStrategy
+from algorithms.alns.operators.operator_strategy import (
+    OperatorStrategy,
+    OperatorContext,
+)
 from algorithms.solution_state import SolutionState, Index
-from algorithms.heuristics.greedy_degree import pseudo_greedy_repair, greedy_repair
+from algorithms.heuristics.greedy_degree import pseudo_greedy_repair
 
 
 class GreedyDegreeOperator(OperatorStrategy):
@@ -13,8 +16,11 @@ class GreedyDegreeOperator(OperatorStrategy):
         self._alpha = greedy_alpha
         self._info_indexes.append(Index.DEGREE)
 
+    @classmethod
+    def get_instance_from_context(cls, context: OperatorContext):
+        return cls(context.greedy_alpha)
+
     def _modify_solution(self, curr_S: SolutionState) -> SolutionState:
-        # return greedy_repair(curr_S)
         return pseudo_greedy_repair(curr_S, self._alpha)
 
     def _update_state_info(self, curr_S: SolutionState) -> SolutionState:

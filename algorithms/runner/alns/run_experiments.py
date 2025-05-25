@@ -37,7 +37,7 @@ def run_alns_metrics(config, k, folder, runs):
             alns.reset()
 
         metrics_logger.add_progression_log(
-            metrics_folder, filename, best_run_progression_metric
+            metrics_folder, filename, best_run_progression_metric, algorithm_name
         )
         row_data = metrics_logger.eval_instance_results(filename, instance_results)
         metrics_logger.add_metrics(metrics_folder, row_data)

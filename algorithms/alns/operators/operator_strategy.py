@@ -1,6 +1,19 @@
 from typing import List
 from abc import ABC, abstractmethod
 from algorithms.solution_state import SolutionState, Index
+import numpy.random as random
+
+
+class OperatorContext:
+    def __init__(
+        self,
+        rng: random.Generator = random.default_rng(),
+        greedy_alpha: float = 0,
+        destroy_factor: float = 0.5,
+    ):
+        self.rng = rng
+        self.greedy_alpha = greedy_alpha
+        self.destroy_factor = destroy_factor
 
 
 class OperatorStrategy(ABC):
@@ -30,6 +43,11 @@ class OperatorStrategy(ABC):
 
     @abstractmethod
     def _update_state_info(self, current_solution: SolutionState) -> SolutionState:
+        return NotImplemented
+
+    @abstractmethod
+    def get_instance_from_context(cls, context):
+        """Create an instance from an OperatorContext."""
         return NotImplemented
 
     def init_state_info(self, initial_state: SolutionState) -> None:

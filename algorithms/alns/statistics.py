@@ -1,6 +1,7 @@
 from __future__ import annotations
+from algorithms.solution_state import SolutionState
 from algorithms.alns.event_handler import Event
-from algorithms.alns.enum.alns_enum import OperatorType
+from algorithms.alns.enum.alns_enum import OperatorType, Outcome
 from typing import List, Tuple, Dict, TYPE_CHECKING
 import time
 import pprint
@@ -30,6 +31,10 @@ class Statistics:
         self.best_solution_tracking: List[Tuple[int, int, float, str]] = [
             (0, 0, self.__start_time - self.__start_time, "None")
         ]
+
+        # self.current_solution_tracking: List[Tuple[int, int, str]] = [
+        #     (0, 0, Outcome.BEST.label)
+        # ]
 
     def initialize_operators_metrics(self):
         self.destroy_operators_calls = [[] for _ in range(self.num_destroy_op)]
@@ -61,6 +66,9 @@ class Statistics:
     def track_time_to_best(self):
         self.__alns.events.register(Event.ON_BEST, self.get_iteration_and_time_on_best)
 
+    # def track_current_solution(self):
+    #     self.__alns.events.register(Event.ON_REJECTED, self.get_iteration_and_time_on_best)
+
     def track_operators_performance(self):
         self.__alns.events.register(
             Event.ON_SELECT_UPDATE, self.update_operator_data_from_segment
@@ -79,6 +87,16 @@ class Statistics:
                 operator_name,
             )
         )
+
+    # def get_new_current_solution(self, new_current_solution: SolutionState, operator_name):
+    #     if self.current_solution is None:
+    #         self.current_solution_tracking.append(
+    #         (
+    #             len(new_solution.S),
+    #             self.__alns.stop.iteration,
+    #             ,
+    #         )
+    #     )
 
     def update_operator_data_from_segment(self, destroy_idx, repair_idx, outcome):
         if self.__alns.select.is_update_time():
@@ -109,7 +127,13 @@ class Statistics:
             return self.get_alns_metrics()
 
         if self.__alns.__class__.__name__ == "LNS":
-            self.get_alns_metrics()
+            return self.get_lns_metrics()
+
+    def get_lns_metrics(self) -> Dict:
+        metrics = {
+            "best_solution_progression": self.best_solution_tracking,
+        }
+        return metrics
 
     def get_alns_metrics(self) -> Dict:
         r_op_matrix = {
@@ -144,11 +168,4 @@ class Statistics:
             "d_op_progression": d_op_matrix,
             "r_op_progression": r_op_matrix,
         }
-        return metrics
-
-    def get_lns_metrics(self) -> Dict:
-        metrics = {
-            "best_solution_progression": self.best_solution_tracking,
-        }
-
         return metrics

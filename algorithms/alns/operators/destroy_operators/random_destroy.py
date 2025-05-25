@@ -1,14 +1,10 @@
-from algorithms.alns.operators.operator_strategy import OperatorStrategy
+from algorithms.alns.operators.operator_strategy import (
+    OperatorStrategy,
+    OperatorContext,
+)
 from algorithms.solution_state import SolutionState, Index
 import numpy.random as random
 import math
-
-# from algorithms.alns.operators.repair_operators.greedy_degree import (
-#     GreedyDegreeOperator,
-# )
-# from algorithms.heuristics.greedy_degree import init_state_by_solution
-# from algorithms.utils.graph_visualizer import Visualizer
-# import pprint
 
 
 class RandomDestroy(OperatorStrategy):
@@ -29,7 +25,11 @@ class RandomDestroy(OperatorStrategy):
     def destroy_factor(self) -> str:
         return self._destroy_factor
 
-    def _modify_solution(self, current_solution):
+    @classmethod
+    def get_instance_from_context(cls, context: OperatorContext):
+        return cls(context.destroy_factor, context.rng)
+
+    def _modify_solution(self, current_solution) -> SolutionState:
         remove_size = math.floor(self._destroy_factor * len(current_solution.S))
         to_remove = self._rng.choice(
             list(current_solution.S), size=remove_size, replace=False
@@ -63,39 +63,3 @@ class RandomDestroy(OperatorStrategy):
 
     def _update_state_info(self, current_solution):
         pass
-
-
-# if __name__ == "__main__":
-#     K = 2
-#     S = SolutionState("instances/cities_small_instances/liverpool.txt", K)
-
-#     r_operator = GreedyDegreeOperator()
-#     r_operator._init_state_info(S)
-#     S = r_operator.operate(S)
-#     print(f"Initial Solution size: {len(S.S)}")
-#     print(f"Intersection - Solution and Dominated: {len(S.S & S.dominated)}")
-#     print(f"Intersection - Solution and Non-dominated: {len(S.S & S.non_dominated)}")
-#     print(
-#         f"Intersection - Non-dominated and Dominated: {len(S.non_dominated & S.dominated)}"
-#     )
-
-#     SEED = 7654
-#     DESTROY_FACTOR = 0.05
-#     rng = random.default_rng(SEED)
-#     d_factor = int(len(S.G) * DESTROY_FACTOR)
-#     print(f"\ngrau de destruição: {d_factor} ")
-
-#     d_operator = RandomDestroy(d_factor, rng)
-#     S = d_operator.operate(S)
-
-#     corrected_S = init_state_by_solution(S)
-
-#     # vis = Visualizer(S.G)
-#     # vis.print_as_adjlist()
-
-#     print(f"Solution sets are equivalent: {S.S == corrected_S.S}")
-#     print(f"Dominated node sets are equivalent: {S.dominated == corrected_S.dominated}")
-#     print(
-#         f"Non-Dominated node sets are equivalent: {S.non_dominated == corrected_S.non_dominated}"
-#     )
-#     # pprint.pprint(S.non_dominated)

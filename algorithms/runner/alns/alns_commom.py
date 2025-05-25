@@ -53,7 +53,7 @@ def get_config(configuration: List = None) -> Dict:
             "greedy_alpha": 0.15,
             "destroy_factor": 0.5,
             "method": "iteration",
-            "limit": 10,
+            "limit": 100,
             "initial_temperature": 25,
             "final_temperature": 1,
             "cooling_rate": 0.9975,

@@ -69,8 +69,12 @@ def create_folder(
     instances_path_name = os.path.basename(folder_path)
     base_path = f"algorithms\\runner\\{metaheuristic_name.lower()}\\metrics"
 
-    if metaheuristic_name == "lns" and operators:
-        base_path = f"{base_path}\\{destroy_op_name}_{repair_op_name}"
+    if metaheuristic_name.lower() == "lns" and operators:
+        base_path = f"{base_path}\\{destroy_op_name}\\{repair_op_name}"
+        if not os.path.exists(base_path):
+            os.makedirs(base_path)
+
+    print(base_path)
 
     # Get the last file_number adds 1 and pads with 0s
     folders = [
@@ -98,25 +102,10 @@ def add_config_file(config: dict, folder: str):
     return filepath
 
 
-def add_progression_log(base_folder: str, instance_name: str, metrics: dict):
-    """
-    Built for ALNS
-    Writes an Excel file with two sheets:
-      1) Best-solution progression
-      2) Operator progression (destroy + repair) in wide format
-    """
-    progression_folder = os.path.join(base_folder, "progression")
-    os.makedirs(progression_folder, exist_ok=True)
-    # Prepare file path
-    file_path = os.path.join(progression_folder, f"{instance_name}_progression.xlsx")
+def _add_operators_progression(metrics, metaheuristic_name):
+    if metaheuristic_name.lower() == "lns":
+        return None
 
-    # 1) Best-solution progression
-    best_prog = metrics["best_solution_progression"]
-    df_best = pd.DataFrame(
-        best_prog, columns=["SolutionSize", "Iteration", "TimeElapsed", "Operator"]
-    )
-
-    # 2) Operator progression
     op_progression = {}
     op_progression.update(metrics["d_op_progression"])
     op_progression.update(metrics["r_op_progression"])
@@ -144,11 +133,36 @@ def add_progression_log(base_folder: str, instance_name: str, metrics: dict):
 
     # Optional: sort columns by Update (outer level)
     df_ops = df_ops.sort_index(axis=1, level=0)
+    return df_ops
 
-    # Write to Excel with two sheets: Best Progression and Operator Progression
+
+def add_progression_log(
+    base_folder: str, instance_name: str, metrics: dict, metaheuristic_name: str
+):
+    """
+    Built for ALNS
+    Writes an Excel file with two sheets:
+      1) Best-solution progression
+      2) Operator progression (destroy + repair) in wide format
+    """
+    progression_folder = os.path.join(base_folder, "progression")
+    os.makedirs(progression_folder, exist_ok=True)
+    # Prepare file path
+    file_path = os.path.join(progression_folder, f"{instance_name}_progression.xlsx")
+
+    # 1) Best-solution progression
+    best_prog = metrics["best_solution_progression"]
+    df_best = pd.DataFrame(
+        best_prog, columns=["SolutionSize", "Iteration", "TimeElapsed", "Operator"]
+    )
+
+    # 2) Operator progression
+    df_ops = _add_operators_progression(metrics, metaheuristic_name)
+
     with pd.ExcelWriter(file_path, engine="openpyxl") as writer:
         df_best.to_excel(writer, sheet_name="Best Progression", index=False)
-        df_ops.to_excel(writer, sheet_name="Operator Progression")
+        if df_ops is not None:
+            df_ops.to_excel(writer, sheet_name="Operator Progression")
 
     print(f"Progression log written to: {file_path}")
 
