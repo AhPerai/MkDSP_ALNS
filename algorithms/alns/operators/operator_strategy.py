@@ -1,6 +1,7 @@
 from typing import List
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from algorithms.solution_state import SolutionState, Index
+from algorithms.alns.reset import Resettable
 import numpy.random as random
 
 
@@ -16,7 +17,7 @@ class OperatorContext:
         self.destroy_factor = destroy_factor
 
 
-class OperatorStrategy(ABC):
+class OperatorStrategy(Resettable):
     name: str = None
 
     def __init__(self):
@@ -36,6 +37,11 @@ class OperatorStrategy(ABC):
 
         self._update_state_info(current_solution)
         return self._modify_solution(current_solution)
+
+    @abstractmethod
+    def reset(self, rng=None):
+        """Resets the operator values (abstract)"""
+        pass
 
     @abstractmethod
     def _modify_solution(self, current_solution) -> SolutionState:

@@ -21,6 +21,9 @@ class RandomRepair(OperatorStrategy):
     def get_instance_from_context(cls, context: OperatorContext):
         return cls(context.rng)
 
+    def reset(self, rng=None):
+        self._rng = rng
+
     def _modify_solution(self, current_solution) -> SolutionState:
         return repair(current_solution, self._rng)
 

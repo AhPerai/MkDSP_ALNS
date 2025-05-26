@@ -31,7 +31,9 @@ def greedy_repair(curr_S: SolutionState) -> SolutionState:
     return curr_S
 
 
-def pseudo_greedy_repair(curr_S: SolutionState, alpha: float) -> SolutionState:
+def pseudo_greedy_repair(
+    curr_S: SolutionState, alpha: float, rng: random.Generator = random.default_rng()
+) -> SolutionState:
     G = curr_S.G
 
     # main loop
@@ -40,9 +42,9 @@ def pseudo_greedy_repair(curr_S: SolutionState, alpha: float) -> SolutionState:
         max_K = max(candidate_nodes.values())
         min_K = 1
 
-        threshold = max_K - min_K * (max_K - min_K)
+        threshold = max_K - alpha * (max_K - min_K)
         RCL = [u for u, k in candidate_nodes.items() if k >= threshold]
-        v = random.choice(RCL)
+        v = rng.choice(RCL)
 
         curr_S.S.add(v)
 

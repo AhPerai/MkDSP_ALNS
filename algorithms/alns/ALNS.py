@@ -173,6 +173,12 @@ class ALNS(Resettable):
         self.events.unregister_all()
         self._stats = None  # making sure cyclical reference doesnt hold on to memory
 
+        for operator in self.operators[OperatorType.DESTROY].values():
+            operator.reset(rng)
+
+        for operator in self.operators[OperatorType.REPAIR].values():
+            operator.reset(rng)
+
     def clear(self):
         """
         Clears all the components to avoid memory leaks

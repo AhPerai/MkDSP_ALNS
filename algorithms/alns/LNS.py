@@ -132,19 +132,18 @@ class LNS:
         self.accept.reset(rng)
         self.events.unregister_all()
         self._stats = None  # making sure cyclical reference doesnt hold on to memory
+        self.repair_operator.reset(rng)
+        self.destroy_operator.reset(rng)
 
 
-from algorithms.alns.operators.repair_operators.greedy_hybrid_degree import (
-    GreedyHybridDegreeOperator,
-)
 from algorithms.alns.acept_criterion.simulated_annealing import SimulatedAnnealing
 
 
-def run_LNS(K, path):
+def run_LNS():
     #  fixed variables
     GREEDY_ALPHA = 0.25
     DESTROY_FACTOR = 0.5
-    ITERATION = 20
+    ITERATION = 1000
     rng = np.random.default_rng()
 
     # stop condition
@@ -161,23 +160,30 @@ def run_LNS(K, path):
     )
 
     # repair
-    lns.repair_operator = GreedyHybridDegreeOperator(GREEDY_ALPHA)
+    lns.repair_operator = RandomRepair(rng)
     # destroy
     lns.destroy_operator = RandomDestroy(DESTROY_FACTOR, rng)
-
-    initial_S = SolutionState(path, K)
-    best_solution = lns.execute(initial_S)
-
-    TimeToBest = lns.stats.get_last_time_to_best()
-    Runtime = lns.stats.get_runtime_duration()
-    lns.events.unregister_all()
-    lns._stats = None
-    return {
-        "ObjValue": len(best_solution.S),
-        "TimeToBest": TimeToBest,
-        "Runtime": Runtime,
-    }
+    return lns
 
 
 if __name__ == "__main__":
-    run_LNS(2, "instances\cities_small_instances\\belfast.txt")
+    lns = run_LNS()
+
+    for i in range(10):
+        print(f"RNG id: {id(lns.rng)}")
+        print(f"RNG state: {lns.rng.bit_generator.state['state']['state']}")
+
+        initial_S = SolutionState("instances\cities_small_instances\\belfast.txt", 2)
+
+        best_solution = lns.execute(initial_S)
+        TimeToBest = lns.stats.get_last_time_to_best()
+        Runtime = lns.stats.get_runtime_duration()
+        print(
+            {
+                "ObjValue": len(best_solution.S),
+                "TimeToBest": TimeToBest,
+                "Runtime": Runtime,
+            }
+        )
+
+        lns.reset(np.random.default_rng())

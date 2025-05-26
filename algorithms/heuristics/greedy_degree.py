@@ -40,7 +40,9 @@ def greedy_repair(current_S: SolutionState) -> SolutionState:
     return current_S
 
 
-def pseudo_greedy_repair(current_S: SolutionState, alpha: float):
+def pseudo_greedy_repair(
+    current_S: SolutionState, alpha: float, rng: random.Generator = random.default_rng()
+):
     G = current_S.G
 
     while len(current_S.non_dominated) > 0:
@@ -53,7 +55,7 @@ def pseudo_greedy_repair(current_S: SolutionState, alpha: float):
         threshold = max_degree - alpha * (max_degree - min_degree)
         RCL = [u for u, degree in candidate_nodes.items() if degree >= threshold]
 
-        v = random.choice(RCL)
+        v = rng.choice(RCL)
 
         current_S.S.add(v)
 

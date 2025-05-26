@@ -78,10 +78,10 @@ def setup_alns(config) -> ALNS:
     rng = np.random.default_rng()
     # repair operators
     random_repair_op = RandomRepair(rng)
-    degree_repair_op = GreedyDegreeOperator(config["greedy_alpha"])
-    least_dom_repair_op = GreedyLeastDominatedOperator(config["greedy_alpha"])
-    hybrid_repair_op_v1 = GreedyHybridDominatedOperator(config["greedy_alpha"])
-    hybrid_repair_op_v2 = GreedyHybridDegreeOperator(config["greedy_alpha"])
+    degree_repair_op = GreedyDegreeOperator(config["greedy_alpha"], rng)
+    least_dom_repair_op = GreedyLeastDominatedOperator(config["greedy_alpha"], rng)
+    hybrid_repair_op_v1 = GreedyHybridDominatedOperator(config["greedy_alpha"], rng)
+    hybrid_repair_op_v2 = GreedyHybridDegreeOperator(config["greedy_alpha"], rng)
 
     # destroy operators
     destroy_op = RandomDestroy(config["destroy_factor"], rng)

@@ -5,6 +5,7 @@ import algorithms.utils.metrics_logger as metrics_logger
 from algorithms.runner.lns.lns_commom import setup_lns, get_config
 from algorithms.alns.lns import LNS
 from algorithms.solution_state import SolutionState
+import numpy.random as random
 
 
 from algorithms.alns.operators.repair_operators import (
@@ -52,7 +53,7 @@ def run_lns_metrics(config, k, folder, runs):
                 best_run_value = run_results["objective_value"]
                 best_run_progression_metric = lns.stats.get_metrics()
 
-            lns.reset()
+            lns.reset(random.default_rng())
 
         metrics_logger.add_progression_log(
             metrics_folder, filename, best_run_progression_metric, algorithm_name
@@ -65,21 +66,20 @@ import pprint
 
 if __name__ == "__main__":
     instances_path = os.path.join("instances", "cities_small_instances")
-    K_values = [1, 2]
+    K_values = [1, 2, 4]
     repair_operators = [
-        RandomRepair.name,
-        GreedyDegreeOperator.name,
-        GreedyLeastDominatedOperator.name,
         GreedyHybridDegreeOperator.name,
         GreedyHybridDominatedOperator.name,
     ]
     destroy_operators = [RandomDestroy.name]
 
+    pprint.pprint(repair_operators)
+    pprint.pprint(destroy_operators)
     for destroy_operator_name in destroy_operators:
         for repair_operator_name in repair_operators:
             config = get_config(destroy_operator_name, repair_operator_name)
             print(
-                f"\n\nOPERATORS:  DESTROY:{destroy_operator_name} REPAIR{repair_operator_name}\n\n"
+                f"\n\nOPERATORS:  DESTROY:{destroy_operator_name} REPAIR:{repair_operator_name}\n\n"
             )
             for K in K_values:
                 print(f"\n\nINITIALIZING FOR K ={K}\n\n")

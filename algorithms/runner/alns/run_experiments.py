@@ -3,6 +3,7 @@ import algorithms.utils.metrics_logger as metrics_logger
 from algorithms.runner.alns.alns_commom import setup_alns, get_config
 from algorithms.alns.alns import ALNS
 from algorithms.solution_state import SolutionState
+import numpy.random as random
 
 
 def run_alns_metrics(config, k, folder, runs):
@@ -34,7 +35,7 @@ def run_alns_metrics(config, k, folder, runs):
                 best_run_value = run_results["objective_value"]
                 best_run_progression_metric = alns.stats.get_metrics()
 
-            alns.reset()
+            alns.reset(random.default_rng())
 
         metrics_logger.add_progression_log(
             metrics_folder, filename, best_run_progression_metric, algorithm_name

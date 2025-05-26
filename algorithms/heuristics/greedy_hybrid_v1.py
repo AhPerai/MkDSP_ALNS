@@ -50,7 +50,9 @@ def greedy_repair(current_S: SolutionState) -> SolutionState:
     return current_S
 
 
-def pseudo_greedy_repair(current_S: SolutionState, alpha: float) -> SolutionState:
+def pseudo_greedy_repair(
+    current_S: SolutionState, alpha: float, rng: random.Generator = random.default_rng()
+) -> SolutionState:
     G = current_S.G
 
     while len(current_S.non_dominated) > 0:
@@ -69,7 +71,7 @@ def pseudo_greedy_repair(current_S: SolutionState, alpha: float) -> SolutionStat
         threshold = max_weight - alpha * (max_weight - min_weight)
         RCL = [u for u, w in candidate_nodes.items() if w >= threshold]
 
-        v = random.choice(RCL)
+        v = rng.choice(RCL)
 
         current_S.S.add(v)
 
