@@ -1,4 +1,6 @@
-parameterFile = "./parameters-alns.txt"
+parameterFile = "algorithms/tunning/alns/parameters-alns.txt"
 trainInstancesDir = "./instances-train"
-targetRunner = "./target-runner.py"
-maxExperiments = 2000
+trainInstancesFile = "./instances.txt"
+targetRunner = "algorithms/tunning/alns/target-runner.py"
+targetRunnerLauncher = "python"
+maxExperiments = 300

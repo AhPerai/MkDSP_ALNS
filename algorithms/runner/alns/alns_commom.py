@@ -19,48 +19,59 @@ from algorithms.alns.operators.destroy_operators.random_destroy import RandomDes
 
 
 schema = [
-    ("greedy_alpha", float),
-    ("destroy_factor", float),
-    ("method", str),
-    ("limit", int),
-    ("initial_temperature", int),
-    ("final_temperature", int),
-    ("cooling_rate", float),
-    ("segment_lenght", int),
-    ("reaction_factor", float),
+    ("greedy_alpha", float, 0.1),
+    ("destroy_factor", float, 0.5),
+    ("method", str, "iteration"),
+    ("limit", int, 100),
+    ("initial_temperature", int, 1),
+    ("final_temperature", float, 1),
+    ("cooling_rate", float, 0.95),
+    ("segment_length", int, 50),
+    ("reaction_factor", float, 0.5),
+    ("reward_best", int, 0),
+    ("reward_new_better", int, 0),
+    ("reward_better", int, 0),
+    ("reward_new_accepted", int, 0),
+    ("reward_accepted", int, 0),
+    ("reward_rejected", int, 0),
 ]
 
 
-def cast(value, caster: Callable):
-    try:
-        return caster(value)
-    except Exception:
-        return value
-
-
-import pprint
-
-
-def get_config(configuration: List = None) -> Dict:
+def get_config_from_args(args):
     config = {}
-    if configuration:
-        for i, (key, caster) in enumerate(schema):
-            config[key] = cast(configuration[i], caster)
+    reward_list = []
+    for key, _, _ in schema:
+        if key.startswith("reward_"):
+            reward_list.append(getattr(args, key))
+        else:
+            config[key] = getattr(args, key)
 
-        config["outcome_rewards"] = list(map(int, configuration[len(schema) :]))
-    else:
-        config = {
-            "greedy_alpha": 0.15,
-            "destroy_factor": 0.5,
-            "method": "iteration",
-            "limit": 100,
-            "initial_temperature": 25,
-            "final_temperature": 1,
-            "cooling_rate": 0.9975,
-            "segment_lenght": 25,
-            "reaction_factor": 0.5,
-            "outcome_rewards": [33, 0, 16, 0, 9, 0],
-        }
+    config["outcome_rewards"] = reward_list
+    config["repair_operators"] = [
+        RandomRepair.name,
+        GreedyDegreeOperator.name,
+        GreedyLeastDominatedOperator.name,
+        GreedyHybridDegreeOperator.name,
+        GreedyHybridDominatedOperator.name,
+    ]
+    config["destroy_operators"] = [RandomDestroy.name]
+    return config
+
+
+def get_config() -> Dict:
+
+    config = {
+        "greedy_alpha": 0.15,
+        "destroy_factor": 0.5,
+        "method": "iteration",
+        "limit": 5000,
+        "initial_temperature": 25,
+        "final_temperature": 1,
+        "cooling_rate": 0.9975,
+        "segment_length": 25,
+        "reaction_factor": 0.5,
+        "outcome_rewards": [33, 0, 16, 0, 9, 0],
+    }
 
     config["repair_operators"] = [
         RandomRepair.name,
@@ -112,7 +123,7 @@ def setup_alns(config) -> ALNS:
     seg_roulette_wheel = RouletteWheelSelect(
         num_destroy_op=len(d_op_list),
         num_repair_op=len(r_op_list),
-        segment_lenght=config["segment_lenght"],
+        segment_lenght=config["segment_length"],
         reaction_factor=config["reaction_factor"],
         outcome_rewards=config["outcome_rewards"],
         rng=rng,

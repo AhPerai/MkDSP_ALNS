@@ -10,43 +10,28 @@ import numpy as np
 
 
 schema = [
-    ("greedy_alpha", float),
-    ("destroy_factor", float),
-    ("method", str),
-    ("limit", int),
-    ("initial_temperature", int),
-    ("final_temperature", int),
+    ("greedy_alpha", float, 0.1),
+    ("destroy_factor", float, 0.5),
+    ("method", str, "iteration"),
+    ("limit", int, 5000),
+    ("initial_temperature", int, 1),
+    ("final_temperature", int, 1),
+    ("cooling_rate", float, 0.95),
 ]
 
 
-def cast(value, caster: Callable):
-    try:
-        return caster(value)
-    except Exception:
-        return value
-
-
-def get_config(
-    destroy_operator: str, repair_operator: str, configuration: List = None
-) -> Dict:
-    config = {}
-    if configuration:
-        for i, (key, caster) in enumerate(schema):
-            config[key] = cast(configuration[i], caster)
-
-        config["outcome_rewards"] = list(map(int, configuration[len(schema) :]))
-    else:
-        config = {
-            "greedy_alpha": 0.15,
-            "destroy_factor": 0.5,
-            "method": "iteration",
-            "limit": 100,
-            "initial_temperature": 25,
-            "final_temperature": 1,
-            "cooling_rate": 0.9975,
-            "destroy_operator": destroy_operator,
-            "repair_operator": repair_operator,
-        }
+def get_config(destroy_operator: str, repair_operator: str) -> Dict:
+    config = {
+        "greedy_alpha": 0.15,
+        "destroy_factor": 0.5,
+        "method": "iteration",
+        "limit": 5000,
+        "initial_temperature": 25,
+        "final_temperature": 1,
+        "cooling_rate": 0.9975,
+        "destroy_operator": destroy_operator,
+        "repair_operator": repair_operator,
+    }
 
     return config
 

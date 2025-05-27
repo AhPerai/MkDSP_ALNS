@@ -50,4 +50,4 @@ if __name__ == "__main__":
     K_values = [1, 2, 4]
     for K in K_values:
         print(f"\n\nINITIALIZING FOR K ={K}\n\n")
-        run_alns_metrics(config, K, instances_path, 2)
+        run_alns_metrics(config, K, instances_path, 5)

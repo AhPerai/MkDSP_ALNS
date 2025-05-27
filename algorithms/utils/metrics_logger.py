@@ -168,7 +168,7 @@ def add_progression_log(
 
 
 def add_metrics(folder, data):
-    filepath = os.path.join(folder, "data")
+    filepath = os.path.join(folder, "data.csv")
 
     file_exists = os.path.isfile(filepath)
     with open(filepath, mode="a", newline="") as csvfile:
