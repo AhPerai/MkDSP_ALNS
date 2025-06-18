@@ -110,10 +110,8 @@ def _add_operators_progression(metrics, metaheuristic_name):
     op_progression.update(metrics["d_op_progression"])
     op_progression.update(metrics["r_op_progression"])
 
-    # Build multi-index columns: (metric, update_idx)
     records = {}
     for op_name, lists in op_progression.items():
-        # lists is a list of one dict containing attempt, score, weight lists
         data = lists[0]
         steps = len(data["attempt"])
         for metric in ("attempt", "score", "weight"):
@@ -122,16 +120,14 @@ def _add_operators_progression(metrics, metaheuristic_name):
                 records.setdefault(op_name, {})[col] = data[metric][idx]
 
     df_ops = pd.DataFrame.from_dict(records, orient="index")
-    # Sort columns by metric, then step
+
     df_ops = df_ops.reindex(sorted(df_ops.columns, key=lambda x: (x[1], x[0])), axis=1)
     df_ops.columns = pd.MultiIndex.from_tuples(
         df_ops.columns, names=["Metric", "Update"]
     )
 
-    # Swap to have Update on top, Metric below
     df_ops.columns = df_ops.columns.swaplevel(0, 1)
 
-    # Optional: sort columns by Update (outer level)
     df_ops = df_ops.sort_index(axis=1, level=0)
     return df_ops
 
@@ -139,24 +135,16 @@ def _add_operators_progression(metrics, metaheuristic_name):
 def add_progression_log(
     base_folder: str, instance_name: str, metrics: dict, metaheuristic_name: str
 ):
-    """
-    Built for ALNS
-    Writes an Excel file with two sheets:
-      1) Best-solution progression
-      2) Operator progression (destroy + repair) in wide format
-    """
     progression_folder = os.path.join(base_folder, "progression")
     os.makedirs(progression_folder, exist_ok=True)
-    # Prepare file path
+
     file_path = os.path.join(progression_folder, f"{instance_name}_progression.xlsx")
 
-    # 1) Best-solution progression
     best_prog = metrics["best_solution_progression"]
     df_best = pd.DataFrame(
         best_prog, columns=["SolutionSize", "Iteration", "TimeElapsed", "Operator"]
     )
 
-    # 2) Operator progression
     df_ops = _add_operators_progression(metrics, metaheuristic_name)
 
     with pd.ExcelWriter(file_path, engine="openpyxl") as writer:
@@ -180,12 +168,12 @@ def add_metrics(folder, data):
 
 
 def create_excel_from_results(root_folder):
-    output_file = os.path.join(root_folder, "Experiment_Results.xlsx")
+    output_file = os.path.join(root_folder, "Resultados_Experimentais.xlsx")
 
     writer = pd.ExcelWriter(output_file, engine="openpyxl")
 
-    # Handle ALNS and ALNS_TUNNED folders
-    for folder_name in ["degree", "least_dom", "hybrid_v1", "hybrid_v2", "random"]:
+    # Especifica as
+    for folder_name in ["alns_conf_k_1", "alns_conf_k_2", "alns_conf_k_4"]:
         folder_path = os.path.join(root_folder, folder_name)
         if not os.path.exists(folder_path):
             continue
@@ -196,7 +184,6 @@ def create_excel_from_results(root_folder):
             if not os.path.isdir(subfolder_path):
                 continue
 
-            # Extract K value
             k_value = subfolder.split("-K_")[-1]
 
             data_path = os.path.join(subfolder_path, "data.csv")
@@ -208,7 +195,7 @@ def create_excel_from_results(root_folder):
             sheet_df = pd.concat(sheet_data, axis=1)
             sheet_df.to_excel(writer, sheet_name=folder_name)
 
-    # Handle LNS folder
+    # Tratamento especifico para a pasta do lns já que possui vários algoritmos
     lns_folder = os.path.join(root_folder, "lns")
     if os.path.exists(lns_folder):
         for destroy_op in os.listdir(lns_folder):
@@ -221,7 +208,7 @@ def create_excel_from_results(root_folder):
                 if not os.path.isdir(repair_path):
                     continue
 
-                sheet_name = f"{destroy_op}_{repair_op}"[:31]  # Excel sheet limit
+                sheet_name = f"{destroy_op}_{repair_op}"[:31]
 
                 sheet_data = {}
                 for subfolder in os.listdir(repair_path):
@@ -241,8 +228,8 @@ def create_excel_from_results(root_folder):
                     sheet_df.to_excel(writer, sheet_name=sheet_name)
 
     writer.close()
-    print(f"Excel file created at: {output_file}")
+    print(f"Folha de Experimentos criada em: {output_file}")
 
 
 if __name__ == "__main__":
-    create_excel_from_results(f"D:\\Users\\Pera\\Desktop\\heuristic-metrics")
+    create_excel_from_results(f"D:\\Users\\Pera\Desktop\\124 - Novos Testes")
