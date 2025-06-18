@@ -23,7 +23,8 @@ def run_alns_metrics(config, k, folder, runs):
         best_run_progression_metric = {}
 
         for _ in range(runs):
-            solution = alns.execute(initial_S)
+            copy_S = initial_S.copy()
+            solution = alns.execute(copy_S)
             run_results = {
                 "objective_value": len(solution.S),
                 "runtime": alns.stats.get_runtime_duration(),

@@ -3,4 +3,5 @@ trainInstancesDir = "./instances-train"
 trainInstancesFile = "./instances.txt"
 targetRunner = "algorithms/tunning/alns/target-runner.py"
 targetRunnerLauncher = "python"
-maxExperiments = 300
+maxExperiments = 3000
+sampleInstances = 1

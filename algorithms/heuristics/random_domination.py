@@ -27,20 +27,3 @@ def repair(
         current_S.non_dominated.discard(v)
 
     return current_S
-
-
-import os
-
-if __name__ == "__main__":
-    K = 2
-    INSTANCE_FOLDER = "instances/cities_small_instances"
-    for filename in os.listdir(INSTANCE_FOLDER):
-        city_name = filename.replace(".txt", "")
-        path = os.path.join(INSTANCE_FOLDER, filename)
-
-        S = SolutionState(path, K)
-        S.add_info_index([Index.K])
-        S.init_G_info()
-        S = repair(S)
-
-        print(f"Instance: {city_name} | Result: {len(S.S)}")

@@ -41,7 +41,8 @@ def run_lns_metrics(config, k, folder, runs):
         best_run_progression_metric = {}
 
         for _ in range(runs):
-            solution = lns.execute(initial_S)
+            copy_S = initial_S.copy()
+            solution = lns.execute(copy_S)
             run_results = {
                 "objective_value": len(solution.S),
                 "runtime": lns.stats.get_runtime_duration(),
@@ -68,8 +69,7 @@ if __name__ == "__main__":
     instances_path = os.path.join("instances", "cities_small_instances")
     K_values = [1, 2, 4]
     repair_operators = [
-        GreedyHybridDegreeOperator.name,
-        GreedyHybridDominatedOperator.name,
+        RandomRepair.name,
     ]
     destroy_operators = [RandomDestroy.name]
 

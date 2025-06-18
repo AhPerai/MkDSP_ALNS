@@ -19,20 +19,20 @@ from algorithms.alns.operators.destroy_operators.random_destroy import RandomDes
 
 
 schema = [
-    ("greedy_alpha", float, 0.1),
-    ("destroy_factor", float, 0.5),
+    ("greedy_alpha", float, 0.0057),
+    ("destroy_factor", float, 0.2666),
     ("method", str, "iteration"),
-    ("limit", int, 100),
-    ("initial_temperature", int, 1),
-    ("final_temperature", float, 1),
-    ("cooling_rate", float, 0.95),
-    ("segment_length", int, 50),
-    ("reaction_factor", float, 0.5),
-    ("reward_best", int, 0),
+    ("limit", int, 5000),
+    ("initial_temperature", int, 62),
+    ("final_temperature", float, 0.1187),
+    ("cooling_rate", float, 0.9434),
+    ("segment_length", int, 303),
+    ("reaction_factor", float, 0.8744),
+    ("reward_best", int, 72),
     ("reward_new_better", int, 0),
-    ("reward_better", int, 0),
+    ("reward_better", int, 12),
     ("reward_new_accepted", int, 0),
-    ("reward_accepted", int, 0),
+    ("reward_accepted", int, 32),
     ("reward_rejected", int, 0),
 ]
 
@@ -61,16 +61,16 @@ def get_config_from_args(args):
 def get_config() -> Dict:
 
     config = {
-        "greedy_alpha": 0.15,
-        "destroy_factor": 0.5,
+        "greedy_alpha": 0.0057,
+        "destroy_factor": 0.2666,
         "method": "iteration",
         "limit": 5000,
-        "initial_temperature": 25,
-        "final_temperature": 1,
-        "cooling_rate": 0.9975,
-        "segment_length": 25,
-        "reaction_factor": 0.5,
-        "outcome_rewards": [33, 0, 16, 0, 9, 0],
+        "initial_temperature": 62,
+        "final_temperature": 0.1187,
+        "cooling_rate": 0.9434,
+        "segment_length": 303,
+        "reaction_factor": 0.8744,
+        "outcome_rewards": [72, 0, 12, 0, 32, 0],
     }
 
     config["repair_operators"] = [

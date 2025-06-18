@@ -177,3 +177,72 @@ def add_metrics(folder, data):
         if not file_exists:
             writer.writeheader()
         writer.writerow(data)
+
+
+def create_excel_from_results(root_folder):
+    output_file = os.path.join(root_folder, "Experiment_Results.xlsx")
+
+    writer = pd.ExcelWriter(output_file, engine="openpyxl")
+
+    # Handle ALNS and ALNS_TUNNED folders
+    for folder_name in ["degree", "least_dom", "hybrid_v1", "hybrid_v2", "random"]:
+        folder_path = os.path.join(root_folder, folder_name)
+        if not os.path.exists(folder_path):
+            continue
+
+        sheet_data = {}
+        for subfolder in os.listdir(folder_path):
+            subfolder_path = os.path.join(folder_path, subfolder)
+            if not os.path.isdir(subfolder_path):
+                continue
+
+            # Extract K value
+            k_value = subfolder.split("-K_")[-1]
+
+            data_path = os.path.join(subfolder_path, "data.csv")
+            if os.path.isfile(data_path):
+                df = pd.read_csv(data_path)
+                sheet_data[k_value] = df
+
+        if sheet_data:
+            sheet_df = pd.concat(sheet_data, axis=1)
+            sheet_df.to_excel(writer, sheet_name=folder_name)
+
+    # Handle LNS folder
+    lns_folder = os.path.join(root_folder, "lns")
+    if os.path.exists(lns_folder):
+        for destroy_op in os.listdir(lns_folder):
+            destroy_path = os.path.join(lns_folder, destroy_op)
+            if not os.path.isdir(destroy_path):
+                continue
+
+            for repair_op in os.listdir(destroy_path):
+                repair_path = os.path.join(destroy_path, repair_op)
+                if not os.path.isdir(repair_path):
+                    continue
+
+                sheet_name = f"{destroy_op}_{repair_op}"[:31]  # Excel sheet limit
+
+                sheet_data = {}
+                for subfolder in os.listdir(repair_path):
+                    subfolder_path = os.path.join(repair_path, subfolder)
+                    if not os.path.isdir(subfolder_path):
+                        continue
+
+                    k_value = subfolder.split("-K_")[-1]
+
+                    data_path = os.path.join(subfolder_path, "data.csv")
+                    if os.path.isfile(data_path):
+                        df = pd.read_csv(data_path)
+                        sheet_data[k_value] = df
+
+                if sheet_data:
+                    sheet_df = pd.concat(sheet_data, axis=1)
+                    sheet_df.to_excel(writer, sheet_name=sheet_name)
+
+    writer.close()
+    print(f"Excel file created at: {output_file}")
+
+
+if __name__ == "__main__":
+    create_excel_from_results(f"D:\\Users\\Pera\\Desktop\\heuristic-metrics")
